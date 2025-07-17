@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     OPENSEARCH_ENDPOINT: str = os.getenv("OPENSEARCH_ENDPOINT", "")
     OPENSEARCH_USERNAME: Optional[str] = os.getenv("OPENSEARCH_USERNAME")
     OPENSEARCH_PASSWORD: Optional[str] = os.getenv("OPENSEARCH_PASSWORD")
+    OPENSEARCH_USE_IAM_AUTH: bool = os.getenv("OPENSEARCH_USE_IAM_AUTH", "").lower() == "true"
     
     # Cognito Configuration
     COGNITO_USER_POOL_ID: str = os.getenv("COGNITO_USER_POOL_ID", "")
