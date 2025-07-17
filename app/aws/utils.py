@@ -4,6 +4,7 @@ Utility functions for AWS service integrations.
 import os
 import io
 import uuid
+import asyncio
 import mimetypes
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List, Tuple, BinaryIO, Union
@@ -513,7 +514,7 @@ async def validate_file(
     
     # Get file size
     await file.seek(0, os.SEEK_END)
-    file_size = file.tell()
+    file_size = await file.tell() if asyncio.iscoroutine(file.tell()) else file.tell()
     await file.seek(0)
     
     # Get max file size based on subscription tier

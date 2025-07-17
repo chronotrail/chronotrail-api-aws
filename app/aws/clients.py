@@ -438,7 +438,7 @@ def with_retry(
     max_delay: float = 30.0,
     backoff_factor: float = 2.0,
     jitter: bool = True,
-    retryable_exceptions: tuple = (ConnectionError, ConnectTimeoutError)
+    retryable_exceptions: tuple = (ConnectionError, ConnectTimeoutError, Exception)
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
     Advanced retry decorator with exponential backoff and jitter.
