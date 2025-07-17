@@ -193,7 +193,7 @@ class AWSClientManager:
         service_name: str, 
         config: Optional[botocore.config.Config] = None,
         **kwargs
-    ) -> aioboto3.client:
+    ) -> Callable:
         """
         Get a configured aioboto3 client for the specified AWS service.
         
@@ -266,7 +266,7 @@ def get_s3_client(**kwargs) -> boto3.client:
 
 
 @lru_cache(maxsize=32)
-def get_async_s3_client(**kwargs) -> aioboto3.client:
+def get_async_s3_client(**kwargs) -> Callable:
     """
     Get a configured async S3 client.
     
@@ -746,11 +746,10 @@ async def handle_aws_error_async(
         return wrapper
     
     return decorator
-# A
-dditional client functions for required AWS services
+# Additional client functions for required AWS services
 
 @lru_cache(maxsize=32)
-def get_async_textract_client(**kwargs) -> aioboto3.client:
+def get_async_textract_client(**kwargs) -> Callable:
     """
     Get a configured async Textract client.
     
@@ -764,7 +763,7 @@ def get_async_textract_client(**kwargs) -> aioboto3.client:
 
 
 @lru_cache(maxsize=32)
-def get_async_rekognition_client(**kwargs) -> aioboto3.client:
+def get_async_rekognition_client(**kwargs) -> Callable:
     """
     Get a configured async Rekognition client.
     
@@ -778,7 +777,7 @@ def get_async_rekognition_client(**kwargs) -> aioboto3.client:
 
 
 @lru_cache(maxsize=32)
-def get_async_transcribe_client(**kwargs) -> aioboto3.client:
+def get_async_transcribe_client(**kwargs) -> Callable:
     """
     Get a configured async Transcribe client.
     
@@ -786,13 +785,13 @@ def get_async_transcribe_client(**kwargs) -> aioboto3.client:
         **kwargs: Additional arguments to pass to aioboto3.client
         
     Returns:
-        aioboto3.client: Configured async Transcribe client factory
+        Callable: Configured async Transcribe client factory
     """
     return aws_client_manager.get_async_client('transcribe', config=TRANSCRIBE_CONFIG, **kwargs)
 
 
 @lru_cache(maxsize=32)
-def get_async_bedrock_client(**kwargs) -> aioboto3.client:
+def get_async_bedrock_client(**kwargs) -> Callable:
     """
     Get a configured async Bedrock client for LLM inference.
     
@@ -806,7 +805,7 @@ def get_async_bedrock_client(**kwargs) -> aioboto3.client:
 
 
 @lru_cache(maxsize=32)
-def get_async_bedrock_embeddings_client(**kwargs) -> aioboto3.client:
+def get_async_bedrock_embeddings_client(**kwargs) -> Callable:
     """
     Get a configured async Bedrock client for embeddings generation.
     

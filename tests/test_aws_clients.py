@@ -8,6 +8,7 @@ from unittest.mock import patch, MagicMock
 import boto3
 import botocore.session
 from botocore.stub import Stubber
+from botocore.exceptions import ClientError
 
 from app.aws.clients import (
     aws_client_manager,
@@ -92,16 +93,16 @@ class TestAWSClients(unittest.TestCase):
                 "Message": "Test error message"
             }
         }
-        mock_error = boto3.client("s3").meta.client.exceptions.ClientError(
+        mock_error = ClientError(
             mock_response, "test_operation"
         )
         
-        @handle_aws_error
+        @handle_aws_error()
         def test_func():
             raise mock_error
         
         # Verify the decorator properly re-raises the exception
-        with self.assertRaises(boto3.client("s3").meta.client.exceptions.ClientError):
+        with self.assertRaises(ClientError):
             test_func()
     
     def test_generate_s3_key(self):
@@ -176,7 +177,7 @@ class TestAWSClients(unittest.TestCase):
         
         # Set up mock for non-existing file
         error_response = {"Error": {"Code": "404", "Message": "Not Found"}}
-        mock_client.head_object.side_effect = boto3.client("s3").meta.client.exceptions.ClientError(
+        mock_client.head_object.side_effect = ClientError(
             error_response, "head_object"
         )
         

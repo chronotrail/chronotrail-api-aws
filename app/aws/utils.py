@@ -257,8 +257,9 @@ def check_file_exists(bucket_name: str, object_key: str) -> bool:
         raise S3Error(
             message=f"Unexpected error checking if file exists: {str(e)}",
             operation="check_file_exists"
-        )# Additi
-onal utility functions for AWS services
+        )
+
+# Additional utility functions for AWS services
 
 @retry(
     retry=retry_if_exception_type((ClientError, S3Error)),
