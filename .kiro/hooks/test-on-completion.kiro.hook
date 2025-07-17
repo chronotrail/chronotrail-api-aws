@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Run Tests on Task Completion",
+  "description": "Automatically runs unit tests when a task is completed to verify code functionality and catch any regressions",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "app/**/*.py",
+      "tests/**/*.py"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A task has been completed and code changes have been made. Please run the unit tests to verify everything is working correctly. Execute the test suite using pytest and report the results."
+  }
+}

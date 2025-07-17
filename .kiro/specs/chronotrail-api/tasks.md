@@ -6,14 +6,14 @@
   - Set up environment configuration for AWS services and database connections
   - _Requirements: 10.1, 10.2_
 
-- [ ] 2. Implement database models and migrations
-  - [ ] 2.1 Create SQLAlchemy models for all database tables
+- [x] 2. Implement database models and migrations
+  - [x] 2.1 Create SQLAlchemy models for all database tables
     - Implement User, LocationVisit, TextNote, MediaFile, QuerySession, and DailyUsage models
     - Configure proper relationships and constraints with OAuth fields and subscription tiers
     - Add array field support for names/tags
     - _Requirements: 1.1, 2.1, 7.1, 8.1, 9.1_
   
-  - [ ] 2.2 Create database migration scripts
+  - [x] 2.2 Create database migration scripts
     - Write Alembic migrations for all table creation
     - Add proper indexes including GIN indexes for array fields
     - Include sample data for testing
