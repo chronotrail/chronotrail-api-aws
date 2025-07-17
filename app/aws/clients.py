@@ -621,7 +621,7 @@ def handle_aws_error(
     return decorator
 
 
-async def handle_aws_error_async(
+def handle_aws_error_async(
     service_name: Optional[str] = None,
     error_mapping: Optional[Dict[str, type[AWSServiceError]]] = None
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:

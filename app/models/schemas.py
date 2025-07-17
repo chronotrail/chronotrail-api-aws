@@ -414,8 +414,8 @@ class PaginationParams(BaseModel):
     page_size: int = Field(ge=1, le=100, default=20)
 
     model_config = ConfigDict(from_attributes=True)
-# Fi
-le size validation models
+
+# File size validation models
 class FileSizeLimits(BaseModel):
     """File size limits based on subscription tier."""
     photo_max_size_mb: int = Field(ge=1)
