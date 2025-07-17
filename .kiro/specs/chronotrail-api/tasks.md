@@ -52,7 +52,7 @@
     - Implement error handling for transcription failures
     - _Requirements: 4.1, 4.2, 4.3_
   
-  - [ ] 5.3 Create embedding and vector storage service
+  - [x] 5.3 Create embedding and vector storage service
     - Integrate Amazon Bedrock for text embeddings generation
     - Implement OpenSearch document indexing with proper mapping
     - Create vector search functionality with user isolation
