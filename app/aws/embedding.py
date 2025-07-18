@@ -163,6 +163,7 @@ class EmbeddingService:
         """
         # For now, just call the synchronous method
         # In the future, this could be implemented with a thread pool
+        # We need to make sure we don't try to await a non-coroutine
         return self.generate_embeddings(text)
     
     @with_retry(max_attempts=3, base_delay=1.0)
@@ -613,11 +614,11 @@ class EmbeddingService:
             BedrockError: If embedding generation fails
         """
         try:
-            # Generate embeddings for query text
-            vector = await self.generate_embeddings_async(text)
+            # Generate embeddings for query text - not awaiting since it's not a coroutine
+            vector = self.generate_embeddings_async(text)
             
-            # Search by vector
-            return await self.search_by_vector_async(
+            # Search by vector - not awaiting since it's not a coroutine
+            return self.search_by_vector_async(
                 user_id=user_id,
                 vector=vector,
                 k=k,
@@ -744,11 +745,11 @@ class EmbeddingService:
             OpenSearchError: If indexing fails
         """
         try:
-            # Generate embeddings
-            vector = await self.generate_embeddings_async(text)
+            # Generate embeddings - not awaiting since it's not a coroutine
+            vector = self.generate_embeddings_async(text)
             
-            # Index document
-            doc_id = await self.index_document_async(
+            # Index document - not awaiting since it's not a coroutine
+            doc_id = self.index_document_async(
                 user_id=user_id,
                 content_type=content_type,
                 content_text=text,
