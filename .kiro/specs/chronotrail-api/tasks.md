@@ -59,19 +59,19 @@
     - _Requirements: 2.1, 3.2, 4.2, 5.2_
 
 - [ ] 6. Implement OAuth authentication and usage management
-  - [ ] 6.1 Create OAuth integration services
+  - [x] 6.1 Create OAuth integration services
     - Implement Google OAuth token verification with Google API client
     - Implement Apple Sign-In token verification with Apple's public keys
     - Create user creation/update logic from OAuth provider data
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
   
-  - [ ] 6.2 Implement JWT token management
+  - [x] 6.2 Implement JWT token management
     - Create JWT token generation with user claims and subscription tier
     - Implement JWT token validation middleware for protected endpoints
     - Add refresh token functionality for token renewal
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
   
-  - [ ] 6.3 Create usage tracking and enforcement service
+  - [x] 6.3 Create usage tracking and enforcement service
     - Implement daily usage tracking for content submissions and queries
     - Create tier-based limit enforcement with proper error responses
     - Add query date range validation based on subscription tier
