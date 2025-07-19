@@ -22,7 +22,7 @@ from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from app.db.database import Base
+from app.db.base import Base
 
 
 class User(Base):

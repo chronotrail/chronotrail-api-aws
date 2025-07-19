@@ -78,7 +78,7 @@
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
 - [ ] 7. Create database repository layer
-  - [ ] 7.1 Implement location visits repository
+  - [x] 7.1 Implement location visits repository
     - Create CRUD operations for location visits with array field support
     - Add date range filtering and coordinate-based queries
     - Implement update functionality for descriptions and names

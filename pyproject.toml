@@ -149,3 +149,9 @@ exclude_lines = [
     "raise AssertionError",
     "raise NotImplementedError",
 ]
+
+[dependency-groups]
+dev = [
+    "aiosqlite>=0.21.0",
+    "greenlet>=3.2.3",
+]
