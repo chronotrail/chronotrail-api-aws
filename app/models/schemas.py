@@ -68,7 +68,7 @@ class LocationMixin(BaseModel):
     longitude: Optional[Decimal] = Field(None, ge=-180, le=180, decimal_places=8)
     latitude: Optional[Decimal] = Field(None, ge=-90, le=90, decimal_places=8)
     address: Optional[str] = Field(None, max_length=1000)
-    names: Optional[List[str]] = Field(None, max_items=10)
+    names: Optional[List[str]] = Field(None, max_length=10)
 
     @field_validator('names')
     @classmethod
@@ -181,7 +181,7 @@ class LocationVisitCreate(LocationVisitBase):
 class LocationVisitUpdate(BaseModel):
     """Model for updating a location visit."""
     description: Optional[str] = Field(None, max_length=5000)
-    names: Optional[List[str]] = Field(None, max_items=10)
+    names: Optional[List[str]] = Field(None, max_length=10)
 
     @field_validator('names')
     @classmethod

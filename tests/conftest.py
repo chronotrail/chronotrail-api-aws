@@ -14,14 +14,18 @@ from sqlalchemy.sql import func
 from uuid import uuid4
 
 from app.db.base import Base
+from sqlalchemy.orm import declarative_base
 
 
 # Test database URL - using SQLite for testing
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
+# Create a separate base for test models to avoid conflicts with production models
+TestBase = declarative_base()
+
 
 # Test-specific models that work with SQLite (no ARRAY support)
-class TestUser(Base):
+class UserModel(TestBase):
     """Test user model for SQLite compatibility."""
     
     __tablename__ = "test_users"
@@ -38,7 +42,7 @@ class TestUser(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now())
 
 
-class TestLocationVisit(Base):
+class LocationVisitModel(TestBase):
     """Test location visit model for SQLite compatibility."""
     
     __tablename__ = "test_location_visits"
@@ -52,6 +56,56 @@ class TestLocationVisit(Base):
     visit_time = Column(DateTime, nullable=False)
     duration = Column(Integer, nullable=True)
     description = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now())
+
+
+class TextNoteModel(TestBase):
+    """Test text note model for SQLite compatibility."""
+    
+    __tablename__ = "text_notes"
+    
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
+    text_content = Column(Text, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+    longitude = Column(DECIMAL(10, 8), nullable=True)
+    latitude = Column(DECIMAL(11, 8), nullable=True)
+    address = Column(Text, nullable=True)
+    names = Column(Text, nullable=True)  # JSON string instead of ARRAY for SQLite
+    created_at = Column(DateTime, nullable=False, default=func.now())
+
+
+class MediaFileModel(TestBase):
+    """Test media file model for SQLite compatibility."""
+    
+    __tablename__ = "media_files"
+    
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
+    file_type = Column(String(50), nullable=False)
+    file_path = Column(String(500), nullable=False)
+    original_filename = Column(String(255), nullable=True)
+    file_size = Column(Integer, nullable=True)
+    timestamp = Column(DateTime, nullable=False)
+    longitude = Column(DECIMAL(10, 8), nullable=True)
+    latitude = Column(DECIMAL(11, 8), nullable=True)
+    address = Column(Text, nullable=True)
+    names = Column(Text, nullable=True)  # JSON string instead of ARRAY for SQLite
+    created_at = Column(DateTime, nullable=False, default=func.now())
+
+
+class DailyUsageModel(TestBase):
+    """Test daily usage model for SQLite compatibility."""
+    
+    __tablename__ = "daily_usage"
+    
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
+    usage_date = Column(DateTime, nullable=False)
+    text_notes_count = Column(Integer, nullable=False, default=0)
+    media_files_count = Column(Integer, nullable=False, default=0)
+    queries_count = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now())
 
@@ -78,7 +132,7 @@ async def async_engine():
     
     # Create all tables
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(TestBase.metadata.create_all)
     
     yield engine
     
