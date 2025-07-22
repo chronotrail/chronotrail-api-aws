@@ -97,7 +97,7 @@
     - _Requirements: 5.1, 5.2, 6.1_
 
 - [ ] 8. Implement authentication API endpoints
-  - [ ] 8.1 Create OAuth authentication endpoints
+  - [x] 8.1 Create OAuth authentication endpoints
     - Implement POST /api/v1/auth/google for Google OAuth sign-in
     - Implement POST /api/v1/auth/apple for Apple Sign-In
     - Implement POST /api/v1/auth/refresh for JWT token refresh

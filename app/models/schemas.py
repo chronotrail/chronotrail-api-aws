@@ -499,6 +499,17 @@ class QuerySessionUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+# OAuth request models
+class GoogleOAuthRequest(BaseModel):
+    """Request model for Google OAuth authentication."""
+    access_token: str = Field(..., min_length=1, description="Google OAuth access token")
+
+
+class AppleOAuthRequest(BaseModel):
+    """Request model for Apple Sign-In authentication."""
+    identity_token: str = Field(..., min_length=1, description="Apple Sign-In identity token")
+
+
 # OAuth token validation models
 class OAuthTokenInfo(BaseModel):
     """Model for OAuth token information."""
