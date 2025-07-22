@@ -110,6 +110,20 @@ class DailyUsageModel(TestBase):
     updated_at = Column(DateTime, nullable=False, default=func.now())
 
 
+class QuerySessionModel(TestBase):
+    """Test query session model for SQLite compatibility."""
+    
+    __tablename__ = "query_sessions"
+    
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
+    session_context = Column(Text, nullable=True)  # JSON string instead of JSON for SQLite
+    last_query = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now())
+    expires_at = Column(DateTime, nullable=False)
+
+
 @pytest.fixture(scope="session")
 def event_loop():
     """Create an instance of the default event loop for the test session."""
