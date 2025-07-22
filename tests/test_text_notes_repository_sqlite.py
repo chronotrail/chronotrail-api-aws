@@ -47,7 +47,10 @@ class TextNoteModelRepository:
         await db.commit()
         await db.refresh(db_obj)
         
-        # Convert back to list for response
+        # Detach from session to prevent further tracking
+        db.expunge(db_obj)
+        
+        # Convert names back to list for response
         if db_obj.names:
             try:
                 db_obj.names = json.loads(db_obj.names)
@@ -77,20 +80,21 @@ class TextNoteModelRepository:
         note_id: UUID
     ) -> Optional[TextNoteModel]:
         """Get a text note by ID for a specific user."""
-        stmt = select(TextNoteModel).where(
-            and_(
-                TextNoteModel.id == str(note_id),
-                TextNoteModel.user_id == str(user_id)
+        with db.no_autoflush:
+            stmt = select(TextNoteModel).where(
+                and_(
+                    TextNoteModel.id == str(note_id),
+                    TextNoteModel.user_id == str(user_id)
+                )
             )
-        )
-        result = await db.execute(stmt)
-        note = result.scalars().first()
-        
-        if note and note.names:
-            try:
-                note.names = json.loads(note.names)
-            except (json.JSONDecodeError, TypeError):
-                note.names = []
+            result = await db.execute(stmt)
+            note = result.scalars().first()
+            
+            if note and note.names:
+                try:
+                    note.names = json.loads(note.names)
+                except (json.JSONDecodeError, TypeError):
+                    note.names = []
         
         return note
     
@@ -135,29 +139,30 @@ class TextNoteModelRepository:
         limit: int = 100
     ) -> List[TextNoteModel]:
         """Search text notes by names/tags."""
-        stmt = select(TextNoteModel).where(TextNoteModel.user_id == str(user_id))
-        
-        if search_terms:
-            # For SQLite, search within the JSON string
-            conditions = []
-            for term in search_terms:
-                conditions.append(TextNoteModel.names.like(f'%"{term}"%'))
+        with db.no_autoflush:
+            stmt = select(TextNoteModel).where(TextNoteModel.user_id == str(user_id))
             
-            if conditions:
-                stmt = stmt.where(or_(*conditions))
-        
-        stmt = stmt.order_by(TextNoteModel.timestamp.desc()).offset(skip).limit(limit)
-        
-        result = await db.execute(stmt)
-        notes = result.scalars().all()
-        
-        # Convert names back to lists
-        for note in notes:
-            if note.names:
-                try:
-                    note.names = json.loads(note.names)
-                except (json.JSONDecodeError, TypeError):
-                    note.names = []
+            if search_terms:
+                # For SQLite, search within the JSON string
+                conditions = []
+                for term in search_terms:
+                    conditions.append(TextNoteModel.names.like(f'%"{term}"%'))
+                
+                if conditions:
+                    stmt = stmt.where(or_(*conditions))
+            
+            stmt = stmt.order_by(TextNoteModel.timestamp.desc()).offset(skip).limit(limit)
+            
+            result = await db.execute(stmt)
+            notes = result.scalars().all()
+            
+            # Convert names back to lists
+            for note in notes:
+                if note.names:
+                    try:
+                        note.names = json.loads(note.names)
+                    except (json.JSONDecodeError, TypeError):
+                        note.names = []
         
         return notes
     
@@ -239,6 +244,105 @@ class TextNoteModelRepository:
         stmt = select(TextNoteModel).where(
             TextNoteModel.user_id == str(user_id)
         ).order_by(TextNoteModel.timestamp.desc()).limit(limit)
+        
+        result = await db.execute(stmt)
+        notes = result.scalars().all()
+        
+        # Convert names back to lists
+        for note in notes:
+            if note.names:
+                try:
+                    note.names = json.loads(note.names)
+                except (json.JSONDecodeError, TypeError):
+                    note.names = []
+        
+        return notes
+    
+    async def get_by_location(
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        longitude: Decimal,
+        latitude: Decimal,
+        radius_km: float = 1.0,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[TextNoteModel]:
+        """Get text notes near specific coordinates using bounding box approximation."""
+        # Simple bounding box approximation for performance
+        # 1 degree latitude ≈ 111 km
+        # 1 degree longitude ≈ 111 km * cos(latitude)
+        lat_delta = Decimal(radius_km / 111.0)
+        lng_delta = Decimal(radius_km / (111.0 * abs(float(latitude.cos() if hasattr(latitude, 'cos') else 1))))
+        
+        stmt = select(TextNoteModel).where(
+            and_(
+                TextNoteModel.user_id == str(user_id),
+                TextNoteModel.latitude.isnot(None),
+                TextNoteModel.longitude.isnot(None),
+                TextNoteModel.latitude.between(latitude - lat_delta, latitude + lat_delta),
+                TextNoteModel.longitude.between(longitude - lng_delta, longitude + lng_delta)
+            )
+        ).order_by(TextNoteModel.timestamp.desc()).offset(skip).limit(limit)
+        
+        result = await db.execute(stmt)
+        notes = result.scalars().all()
+        
+        # Convert names back to lists
+        for note in notes:
+            if note.names:
+                try:
+                    note.names = json.loads(note.names)
+                except (json.JSONDecodeError, TypeError):
+                    note.names = []
+        
+        return notes
+    
+    async def search_by_address(
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        address_query: str,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[TextNoteModel]:
+        """Search text notes by address using text search."""
+        stmt = select(TextNoteModel).where(
+            and_(
+                TextNoteModel.user_id == str(user_id),
+                TextNoteModel.address.isnot(None),
+                TextNoteModel.address.like(f"%{address_query}%")
+            )
+        ).order_by(TextNoteModel.timestamp.desc()).offset(skip).limit(limit)
+        
+        result = await db.execute(stmt)
+        notes = result.scalars().all()
+        
+        # Convert names back to lists
+        for note in notes:
+            if note.names:
+                try:
+                    note.names = json.loads(note.names)
+                except (json.JSONDecodeError, TypeError):
+                    note.names = []
+        
+        return notes
+    
+    async def get_with_location(
+        self,
+        db: AsyncSession,
+        user_id: UUID,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[TextNoteModel]:
+        """Get text notes that have location data."""
+        stmt = select(TextNoteModel).where(
+            and_(
+                TextNoteModel.user_id == str(user_id),
+                TextNoteModel.latitude.isnot(None),
+                TextNoteModel.longitude.isnot(None)
+            )
+        ).order_by(TextNoteModel.timestamp.desc()).offset(skip).limit(limit)
         
         result = await db.execute(stmt)
         notes = result.scalars().all()

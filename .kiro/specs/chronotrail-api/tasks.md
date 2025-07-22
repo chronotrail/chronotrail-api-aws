@@ -84,7 +84,7 @@
     - Implement update functionality for descriptions and names
     - _Requirements: 1.1, 1.3, 8.1, 8.2, 9.1, 9.5_
   
-  - [ ] 7.2 Implement text notes and media files repositories
+  - [x] 7.2 Implement text notes and media files repositories
     - Create storage and retrieval operations for text notes and media files
     - Add location-based filtering and name/tag searches
     - Implement proper user isolation in all queries
