@@ -109,6 +109,15 @@
     - Implement GET /api/v1/subscription for subscription details
     - Add usage limit validation middleware for protected endpoints
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
+    
+    **Implementation Summary:**
+    - **GET /api/v1/usage** - Returns daily usage statistics (text notes, media files, queries) with tier-based limits
+    - **GET /api/v1/subscription** - Returns subscription details including tier, expiration, and all limits
+    - **Usage validation middleware** - Provides dependency functions for content, query, file size, and date range validation
+    - **Files created:** `app/api/v1/endpoints/usage.py`, `app/middleware/usage_validation.py`, `tests/test_usage_endpoints.py`
+    - **Files modified:** `app/api/v1/api.py` (added usage router)
+    - **Testing:** 39 tests pass (13 new endpoint tests + 26 existing service tests)
+    - **Features:** Authentication required, subscription tier aware, comprehensive error handling, extensible middleware design
 
 - [ ] 9. Implement API endpoints for data submission
   - [ ] 9.1 Create location visits endpoints
