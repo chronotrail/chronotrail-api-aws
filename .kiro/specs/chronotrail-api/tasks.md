@@ -104,7 +104,7 @@
     - Implement GET /api/v1/auth/me for user profile retrieval
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
   
-  - [ ] 8.2 Create usage and subscription endpoints
+  - [x] 8.2 Create usage and subscription endpoints
     - Implement GET /api/v1/usage for current usage statistics
     - Implement GET /api/v1/subscription for subscription details
     - Add usage limit validation middleware for protected endpoints
