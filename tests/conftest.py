@@ -1,166 +1,112 @@
 """
-Test configuration and fixtures.
+Pytest configuration and fixtures for testing.
 """
 import asyncio
 import pytest
-import pytest_asyncio
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
-from sqlalchemy import Column, String, Text, DateTime, Integer, ForeignKey, DECIMAL
-from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
-from sqlalchemy.sql import func
+from datetime import datetime, timedelta
+from typing import Dict, Any, AsyncGenerator
+from unittest.mock import Mock, AsyncMock, patch
 from uuid import uuid4
 
-from app.db.base import Base
-from sqlalchemy.orm import declarative_base
+from fastapi import FastAPI
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
+
+from app.core.config import settings
+from app.db.database import get_db, Base
+from app.main import app as main_app
+from app.models.schemas import User, SubscriptionTier
 
 
-# Test database URL - using SQLite for testing
+# Create a test database URL
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-# Create a separate base for test models to avoid conflicts with production models
-TestBase = declarative_base()
+
+# Create a test engine and session
+test_engine = create_async_engine(
+    TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=NullPool
+)
+TestingSessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=test_engine,
+    class_=AsyncSession
+)
 
 
-# Test-specific models that work with SQLite (no ARRAY support)
-class UserModel(TestBase):
-    """Test user model for SQLite compatibility."""
-    
-    __tablename__ = "test_users"
-    
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    oauth_provider = Column(String(50), nullable=False)
-    oauth_subject = Column(String(255), nullable=False)
-    display_name = Column(String(255), nullable=True)
-    profile_picture_url = Column(Text, nullable=True)
-    subscription_tier = Column(String(50), nullable=False, default="free")
-    subscription_expires_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now())
-
-
-class LocationVisitModel(TestBase):
-    """Test location visit model for SQLite compatibility."""
-    
-    __tablename__ = "test_location_visits"
-    
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
-    longitude = Column(DECIMAL(10, 8), nullable=False)
-    latitude = Column(DECIMAL(11, 8), nullable=False)
-    address = Column(Text, nullable=True)
-    names = Column(Text, nullable=True)  # JSON string instead of ARRAY for SQLite
-    visit_time = Column(DateTime, nullable=False)
-    duration = Column(Integer, nullable=True)
-    description = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now())
-
-
-class TextNoteModel(TestBase):
-    """Test text note model for SQLite compatibility."""
-    
-    __tablename__ = "text_notes"
-    
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
-    text_content = Column(Text, nullable=False)
-    timestamp = Column(DateTime, nullable=False)
-    longitude = Column(DECIMAL(10, 8), nullable=True)
-    latitude = Column(DECIMAL(11, 8), nullable=True)
-    address = Column(Text, nullable=True)
-    names = Column(Text, nullable=True)  # JSON string instead of ARRAY for SQLite
-    created_at = Column(DateTime, nullable=False, default=func.now())
-
-
-class MediaFileModel(TestBase):
-    """Test media file model for SQLite compatibility."""
-    
-    __tablename__ = "media_files"
-    
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
-    file_type = Column(String(50), nullable=False)
-    file_path = Column(String(500), nullable=False)
-    original_filename = Column(String(255), nullable=True)
-    file_size = Column(Integer, nullable=True)
-    timestamp = Column(DateTime, nullable=False)
-    longitude = Column(DECIMAL(10, 8), nullable=True)
-    latitude = Column(DECIMAL(11, 8), nullable=True)
-    address = Column(Text, nullable=True)
-    names = Column(Text, nullable=True)  # JSON string instead of ARRAY for SQLite
-    created_at = Column(DateTime, nullable=False, default=func.now())
-
-
-class DailyUsageModel(TestBase):
-    """Test daily usage model for SQLite compatibility."""
-    
-    __tablename__ = "daily_usage"
-    
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
-    usage_date = Column(DateTime, nullable=False)
-    text_notes_count = Column(Integer, nullable=False, default=0)
-    media_files_count = Column(Integer, nullable=False, default=0)
-    queries_count = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now())
-
-
-class QuerySessionModel(TestBase):
-    """Test query session model for SQLite compatibility."""
-    
-    __tablename__ = "query_sessions"
-    
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    user_id = Column(String(36), ForeignKey("test_users.id", ondelete="CASCADE"), nullable=False)
-    session_context = Column(Text, nullable=True)  # JSON string instead of JSON for SQLite
-    last_query = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now())
-    expires_at = Column(DateTime, nullable=False)
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(scope="session")
-async def async_engine():
-    """Create async engine for testing."""
-    engine = create_async_engine(
-        TEST_DATABASE_URL,
-        echo=False,
-        poolclass=StaticPool,
-        connect_args={
-            "check_same_thread": False,
-        },
-    )
-    
-    # Create all tables
-    async with engine.begin() as conn:
-        await conn.run_sync(TestBase.metadata.create_all)
-    
-    yield engine
-    
-    # Clean up
-    await engine.dispose()
-
-
-@pytest_asyncio.fixture
-async def async_db_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
-    """Create async database session for testing."""
-    async_session = sessionmaker(
-        async_engine, class_=AsyncSession, expire_on_commit=False
-    )
-    
-    async with async_session() as session:
+# Override the get_db dependency
+async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Get a test database session."""
+    async with TestingSessionLocal() as session:
         yield session
-        await session.rollback()
+
+
+# Create a test app with overridden dependencies
+@pytest.fixture
+def app() -> FastAPI:
+    """Create a test FastAPI app."""
+    main_app.dependency_overrides[get_db] = override_get_db
+    return main_app
+
+
+@pytest.fixture
+async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
+    """Create a test client for the app."""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client
+
+
+@pytest.fixture
+async def mock_db() -> AsyncGenerator[AsyncSession, None]:
+    """Create a test database session."""
+    # Create all tables
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    # Use the session
+    async with TestingSessionLocal() as session:
+        yield session
+    
+    # Drop all tables
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest.fixture
+def mock_auth_user() -> Dict[str, Any]:
+    """Create a mock authenticated user."""
+    user_id = uuid4()
+    return {
+        "user": User(
+            id=user_id,
+            email="test@example.com",
+            oauth_provider="google",
+            oauth_subject="test_subject",
+            subscription_tier=SubscriptionTier.FREE,
+            display_name="Test User"
+        ),
+        "token": "test_token",
+        "token_type": "bearer"
+    }
+
+
+# Override the get_current_user dependency
+@pytest.fixture(autouse=True)
+def mock_get_current_user(mock_auth_user: Dict[str, Any]) -> None:
+    """Mock the get_current_user dependency."""
+    with patch("app.services.auth.get_current_user") as mock:
+        mock.return_value = mock_auth_user["user"]
+        yield mock
+
+
+# Override the get_current_active_user dependency
+@pytest.fixture(autouse=True)
+def mock_get_current_active_user(mock_auth_user: Dict[str, Any]) -> None:
+    """Mock the get_current_active_user dependency."""
+    with patch("app.services.auth.get_current_active_user") as mock:
+        mock.return_value = mock_auth_user["user"]
+        yield mock

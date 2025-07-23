@@ -386,3 +386,7 @@ class UsageService:
             return "free"  # Downgrade to free if expired
         
         return user.subscription_tier
+
+
+# Create a singleton instance
+usage_service = UsageService()

@@ -263,3 +263,57 @@ async def validate_file_size(
                 "subscription_tier": subscription_tier
             }
         )
+async
+ def validate_date_range(
+    start_date: Optional[datetime] = None,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_async_db)
+) -> bool:
+    """
+    Validate query date range based on subscription tier.
+    
+    Args:
+        start_date: Start date for the query
+        current_user: Current authenticated user
+        db: Database session
+        
+    Returns:
+        True if validation passes
+        
+    Raises:
+        HTTPException: If date range exceeds subscription limits
+    """
+    # Check subscription validity
+    UsageService.check_subscription_validity(current_user)
+    
+    # If no start date provided, no need to validate
+    if not start_date:
+        return True
+    
+    # Get tier limits
+    tier_limits = UsageService.get_tier_limits(current_user.subscription_tier)
+    
+    # Get query history months limit
+    query_history_months = tier_limits.get("query_history_months", 3)  # Default to 3 months
+    
+    # If unlimited (-1), no need to validate
+    if query_history_months == -1:
+        return True
+    
+    # Calculate earliest allowed date
+    earliest_allowed = datetime.utcnow() - timedelta(days=query_history_months * 30)
+    
+    # Check if start date is within allowed range
+    if start_date < earliest_allowed:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "Date range exceeded",
+                "message": f"Your {current_user.subscription_tier} subscription only allows queries up to {query_history_months} months back. "
+                          f"Upgrade your subscription for access to older data.",
+                "allowed_months": query_history_months,
+                "subscription_tier": current_user.subscription_tier
+            }
+        )
+    
+    return True

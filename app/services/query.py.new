@@ -1,0 +1,1482 @@
+ce)ng_servimbeddiervice=e_smbeddingvice(ecessingSerPro= Queryvice ssing_ser_proce
+queryinstancengleton ate a si )
+
+# Creid
+       sion_n_id=ses sessio          
+ e,on Nrences elsefeedia_reences if media_refereferences=mmedia_r            urces,
+ces=so       sour
+     wer=answer,ans       (
+     eryResponse return Qu             
+ ssion.id)
+ id = str(sen_ssio  se       )
+   xtd, conter.ie(db, usesitory.creat_repossion query_seawait= sion       ses      
+            }
+                     ]
+
+       erencesmedia_refef in _rfor media                }
+              
+          format()mp.isoimesta media_ref.t":amp    "timest                    ption,
+ridesc media_ref.on":ripti     "desc                   dia_type,
+meef.: media_rtype"  "media_                      ),
+ref.media_idedia__id": str(m     "media                        {
+              nces": [
+ fere_re"media       
+         [:5]],nked_results rar in") for et("id [r.gs":st_result     "la       : 1,
+    ry_count"    "que           query,
+ st.uery_requet_query": q      "las       xt = {
+         conteon
+      ew sessi # Create n         d:
+  ion_if not sess   i  
+         d = None
+  sion_i   ses         
+    ne ocreate newound,  not fsion     # Ses
+           lse:         e.id)
+    str(session =ession_id    s            D
+ession Ie existing sUs       #                
+        
+  context)n.id, siosesb, (de_contextory.updatrepositn__sessioquery await                 session
+date  # Up                
+     
+            })               )
+  format(imestamp.iso media_ref.t":"timestamp                     on,
+   criptidia_ref.desmetion":    "descrip                   ype,
+  a_tref.medipe": media_media_ty   "                   d),
+  ia_if.medr(media_red": st "media_i                     
+  ].append({nces"refereia_ext["med        cont        s:
+    ia_referenceed min_ref r media        fo        
+          = []
+      erences"] ef"media_rt[   contex         :
+        ntextin cot  noences"a_refer "medi        if
+        erences refdia# Update me             
+                  [:5]]
+ nked_resultsn rar r i"id") fo [r.get(esults"] =ast_rxt["l       conte
+         , 0) + 1_count"queryt.get(" contex] =count""query_t[contex        ry
+        equest.queuery_ry"] = q_querxt["last conte             or {}
+   n_contextiosession.sess=  context        
+         contextionpdate sess U           #  ssion:
+   f se    i            
+   _id))
+     (sessionid, UUIDer.(db, us_userget_bytory.ion_reposiery_sesswait qusession = a        ssion
+    existing se# Update       _id:
+       session       if 
+ d
+       session_ist.ery_requen_id = qu     sessiot
+   gemenanaion m sessHandle
+        #  )
+                   lt_types
+  resu              ms,
+ontext_ite  c           
+   est.query,ry_requ      que      se(
+    ge_responnguaal_laurate_nat._generself = swer     an       ponse
+guage resal lannerate natur    # Ge 
+                a_ref)
+   edind(mppe.aencesmedia_refer          
+                )              ")
+"locationult.get(=reslocation                    ,
+    estamp"]"timt[resulmestamp=    ti                    "),
+a file", "Mediontentget("cion=result. descript                
+       ype"]),_tt["fileleType(resuledia_type=Fi     m                   ),
+"id"]ult[_id=UUID(resiamed              
+          (ferencediaRedia_ref = Me      me              _file":
+e == "mediaf result_typ    i    s
+        ceferen media re Add       #     
+                  source)
+  d(s.appen   source           
+     }       )
+      "location"lt.get(esuocation": r    "l                 0.0),
+"score",.get(": resultcore  "s               None,
+    ") elseampget("timestsult.) if rermat(").isofotimestampesult.get("amp": rtimest         "         ""),
+  ntent", et("co": result.gntent        "co           
+ type,lt_": resu   "type                 e = {
+       sourc
+          to sources    # Add             
+                  })
+                ation")
+ ("locsult.gettion": re "loca                     None,
+    elsetamp")t("timesult.gemat() if resp").isofor"timestamresult.get(p": "timestam                        "),
+tent", "onult.get("c": resent"cont                  
+      ""),", ent_typeget("cont: result.ype"ontent_t    "c          
+          ntent",": "co    "type                  end({
+  t_items.app   contex          ":
+       ctore == "ve result_typ   elif              })
+                 ")
+  onet("locati": result.g "location                     
+  None,p") else tam"timest(lt.ge if resumat()p").isoforimestamt("tesult.ge: rtamp"    "times            ,
+        ", "")le_type("fisult.get_type": re"file                    ,
+    nt", "")conte"get(t.: resulcontent"  "                   ,
+   "media_filepe": "        "ty              d({
+  penems.apxt_itonte           c      ":
+   "media_file_type == result    elif             )
+        }            cation")
+t("lolt.geion": resucat       "lo               None,
+  else imestamp") .get("tif resultrmat() ).isofotimestamp"lt.get(": resustamp"    "time         
+           , ""),ent""cont.get( resulttent":   "con                  note",
+   xt_": "te"type                  ({
+      pend.apitemst_      contex            ":
+  "text_note== esult_type  elif r           })
+                       ")
+ "locationesult.get(cation": r"lo                   
+     None,p") else estam"timesult.get( r() ifmatorisofp").amt("timest": result.gemestamp        "ti            "),
+    tion", "descrip.get("": resultription"desc                       ""),
+  tent",conget("t.": result  "conten                   ,
+   on_visit""locati "type":                 
+       append({ntext_items.          co
+          isit":"location_v  == result_typeif        xt
+        or contelt fmat resu       # For         
+            _type)
+    add(resultsult_types.  re             ")
+ knownpe", "un"ty(sult.get = reult_type    res         sults:
+   nked_reesult in ra       for r   
+           )
+   ypes = set(ult_t    res     []
+   s = item context_           
+assemblyontext r c foultsresrocess       # P
+         else:."
+     recordingsvoice os and loaded photupor s, notes, ion visitur locatut yoking abory. Try asfor your queon ormatilevant infnd any refiouldn't  = "I cswer        an:
+    resultsked_ran    if not 
+           ces = []
+ enreferia_    med[]
+      sources = ces
+       referen mediaources andre sPrepa  #    """
+            sources
+r and with answeonseRespry      Que
+        Returns:          
+  sion
+      sese db: Databas          sults
+  search rets: Ranked ked_resul         ran
+    requestqueryOriginal y_request:     quer        ry
+ the queUser making    user:     rgs:
+        A 
+    
+       esults.m search rse froonsp reanguage laturalerate a n  Gen     ""
+      "   :
+seueryRespon-> Q  ) sion
+  b: AsyncSes
+        d,y]]Dict[str, Ansults: List[nked_re
+        rast,Requeryrequest: Que      query_r: User,
+  se     u,
+        self
+   ponse(te_reseragennc def _
+    asy response
+     return     
+     
+ sults."the rein les ed media fithe referencn view ou cae += " Y respons        s:
+   ia_file    if med
+    dia_file"]= "mee"] =ypif r["tntext_items  r in coes = [r for  media_fil
+       presentes ifa referenct medi a note abou Add
+        #"
+        ns[:3])}.ocatiounique_lin(ing {', '.joncludtions iocaat various lrred  occuentsThese ev += f" se     respon        
+            else:    "
+       [1]}.ationsique_loc} and {untions[0]ocaque_lt {unied as occurrse event" Thee += fpons      res      
+        ) == 2:e_locationsf len(uniqu        eli
+        ns[0]}."atioue_loct {uniq occurred a" Thise += fons   resp              == 1:
+    tions)(unique_loca len     if        tions))
+   (locat(settions = lisnique_loca      u        ions:
+    if locat
+                   ][0])
+   c["names"(loendations.app   loc             
+        "]:mesd loc["nas") an"namec.get(   elif lo              
+   ddress"])end(loc["acations.app          lo              dress"):
+"adget( if loc.                
+   on"]m["locati= ite    loc               ion"):
+  ("locatem.get if it            sults
+   at top 3 re]:  # Look tems[:3ext_iin cont   for item          ns = []
+    locatios
+        e locationsize thpha emsed queries, location-ba   # For        ower:
+ query_l"place" in er or query_lowation" in loc"_lower or " in query"where   elif    
+       }."
+   3])es[:que_dat.join(uni 'ncluding {',dates i various  oncurredse events ocf" Theonse +=     resp                    else:
+            
+[1]}."_dates and {uniquetes[0]}n {unique_daccurred oevents of" These  += esponse        r   
+         := 2s) =te(unique_da   elif len            }."
+ ue_dates[0] on {uniqed This occurrponse += f"     res              
+ = 1:ates) =nique_dif len(u                ates))
+ list(set(ddates =e_iqu      un
+           dates:  if         
+         s
+             pas         or):
+      eErr TypeError,cept (Valu    ex                "))
+%B %d, %Ytrftime("p.sd(timestams.appen date                   00'))
+    '+00:eplace('Z', mp"].r"timestam[format(itefromisoe.mp = datetimta     times          :
+                 try          mp"):
+  ta"timesm.get(     if ite   
+        p 3 resultst to]:  # Look at_items[:3ntex item in co         for]
+    dates = [
+           ampsste the timemphasizries, eed quer time-bas       # Foower:
+     ery_lquin "date" r or y_lowe in quere"r or "timquery_lowein  "when"        if  
+       lower()
+ery.er = qu   query_low  s
+   ywordery kesed on qu basponse-specific re # Add query       
+  "
+      o)}.nf_i(additional', '.joind {o founalsse += f" I spon          re  info:
+    al_addition if 
+                      
+ ")ordingsecce} voice r"{voipend(fl_info.apdditiona       a          ice:
+    elif vo           tos")
+    hotos} phoppend(f"{pional_info.a addit           
+        s:hotoif p          el")
+      rdingsoice recoce} vs and {voiphotootos} nd(f"{phpenfo.apdditional_i       a            e:
+ os and voic if phot                  
+        ")
+     ICE"VO_type") == .get("filefiles if mmedia_1 for m in e = sum(  voic           O")
+   = "PHOTtype") =get("file_ m.les ifmedia_fifor m in = sum(1 otos     ph            type
+ nt by media    # Cou          
+   > 1:s)ia_file len(med          if     
+         otes")
+} text ns)note"{len(text_fo.append(f_inionalit   add         > 1:
+    text_notes)     if len(                
+1]}")
+    ist[-ion_ld {locat[:-1])} anlist(location_{', '.join"visits to (fnfo.appenditional_i  add                   
+      else:                st[1]}")
+ location_lind {0]} alist[on_ati to {locf"visitsappend(o.l_infadditiona                       
+ list) == 2:(location_      if len          ations
+    to 3 locit ]  # Limtions)[:3oca = list(lation_listoc     l               ons) > 1:
+cati len(lo    if           
+              0])
+   names"][n"]["ioocat"lsit[ions.add(vi  locat                      "names"):
+n"].get(atioit["loc and vison")et("locati visit.gif   el                 ])
+["address"ation"]["locdd(visitocations.a   l                ):
+     ress""].get("addonati"loc visit[ndtion") a"loca.get(isitf v       i             isits:
+ location_vr visit in   fo              set()
+tions =      loca          s
+locationue  # Find uniq               1:
+ _visits) >locationlen(      if     
+      
+        fo = []nal_inditio         ades
+   er typof othsummary  Add      #         
+      ile"]
+    a_f== "medi] e"yps if r["tt_itemexr in cont= [r for dia_files       me     
+ note"]== "text_"] "typer[t_items if contexin r r otes = [r fo     text_n
+       sit"]"location_vi== r["type"] f xt_items i contein= [r for r n_visits locatio           by type
+ s ult resoup  # Gr     
+      > 1:ntlt_couf resu  ings
+      ndiher fi of otummary add a sults,ese multiple rf we hav    # I      
+      ss']}"
+addrecation'][''lolt[sutop_retaken at { += f"    response            ):
+ dress""adt(cation"].gelolt["resu and top_n")et("locatiotop_result.g       if le
+      if availabextcation contAdd lo   #     
+               _str}"
+  tamp{times f" from onse +=      resp         p_str:
+  timestam       if}"
+     ypeedia_tsult is a {mant ret relevmos The  += f"onse       respwer()
+     a file").lo, "medie"t("file_typesult.geop_ria_type = t        med":
+    leedia_fi == "m["type"]top_result    elif 
+             ""
+   {content}\: \"+= f"esponse           r     "
+ ] + "...[:97nt = content   conte          
+       0:ent) > 10if len(cont            
+    "content"][sultt = top_renten        co     
+   ent"):"contlt.get( if top_resu     tent
+      t of the cond a snippeAd    #       
+      
+        }"estamp_str{tim+= f" from   response              r:
+ _ststamp  if time         t note"
+ texs a esult i rantlev reosthe mf" Te += spons        re  te":
+  ext_no"] == "tsult["typep_reelif to 
+                  ']}"
+ tion'descripp_result[f". {toresponse +=                n"):
+ iocriptet("desp_result.g   if to               
+ }"
+     p_strammest{ti= f" on sponse +   re   
+          p_str:ammest if ti         
+  "e}location_nam { a visit tosult is relevant re" The most+= f response 
+                 ][0]
+      s""]["namelocation_result["_name = topcation       lo
+         "):.get("namesocation"]ult["lnd top_res an")ocatiosult.get("llif top_re           edress"]
+ tion"]["adult["locares = top_namen_locatio        
+        ):address""tion"].get(sult["loca) and top_retion""loca_result.get(      if top   "
+   a locationname = "n_catio       lo":
+     n_visitatio"loc] == ype"lt["tp_resu     if toon type
+   ed  basails result detop# Add t            
+      pass
+          or):
+    or, TypeErr (ValueErr   except       ")
+  "%B %d, %Ytime(trftimestamp.s = estamp_str    tim            0:00'))
+e('Z', '+0p"].replac["timestam(top_resultatoformisromdatetime.fmp =  timesta               try:
+         ):
+   stamp"me"tiult.get( if top_res       
+ = ""p_strstam time   
+    ble if availa timestamp # Format     
+    [0]
+      tems= context_iesult     top_rts
+    op resuls about ttaild de   # Ad
+            "
+ nse += ".       respo
+ 
+        ns)}"ioscriptpe_deoin(tyding {', '.j f" inclu response +=         :
+  iptionsdescrype_  if t
+           ches")
+   ntent matcoend("ppions.aescript_d       type   pes:
+  esult_ty" in rf "vector)
+        ies"media filend(".appns_descriptio      type   pes:
+   in result_tyile" a_fedi"m       if 
+ notes")t exppend("tcriptions.aes      type_dpes:
+      ult_tyote" in res"text_n
+        if its")istion vend("locappons.aptie_descri   typ  
+       ypes:result_t in n_visit"atio"loc        if tions = []
+ripdesc       type_mation
+  type infor   # Add
+          ms"
+   itevant unt} releult_cond {resI fou"ponse = f res                else:
+"
+   nt itemund 1 releva"I foonse = f resp         
+  t == 1:unult_co   if res
+     ponsesic resth a bat witar      # S      
+  
+  xt_items)conteount = len(esult_c       results
+ d on rmmary baseGenerate su      #     
+  ."
+    ngse recordid voic photos an or uploaded notes,its,iscation vour loabout ying ry. Try ask quen for yourmatioevant inforrel find any uldn't"I corn  retu           t_items:
+exnot contif        ssage
+ t medefaulurn a ts, reto resulIf n   # """
+            esponse
+ e ral languag  Natur
+          : Returns          
+        und
+  foultsypes of ress: T_typeult    res       r context
+ results forch ed searmattt_items: Fo      contex    l query
+  : Origina       querys:
+       Arg   
+        proach.
+   d aplate-basel use a tempor now, we'l
+        Fedrock.ike Amazon Bn LLM lwould use ais ntation, thfull impleme  In a               
+s.
+sulton search resed response ba language urala natGenerate "
+          ""tr:
+      
+    ) -> s][strt_types: Setul     res
+   ny]],tr, AList[Dict[sms: itetext_   con    
+ uery: str,
+        qf,     selnse(
+   sponguage_reural_laerate_nat    def _gen
+]
+    ESULTSULT_MAX_Rsults[:DEFAiltered_reurn f    ret
+    ults Limit res        #      
+       )
+  e
+  reverse=Tru        ,
+   .min))etime, datamp"et("timest], x.gcore"["s (x x:mbda     key=la    .sort(
+   sults filtered_re
+       es) for ti (descendingestamping) and tim(descendrt by score     # So    
+    sults
+    _relts = allsutered_re         filsults:
+   and all_results  filtered_reif notts
+        inal resulrigo oback tely, fall aggressiv too we filtered # If   
+       D]
+      CE_THRESHOL >= RELEVANe"]r["scor_results if  r in allforults = [r red_resilte     fesults
+    row-relevanceout llter    # Fi 
+     
+       }  
+          ctor_fa": boostboost "final_         ,
+      _match_boost location":match_boost"location_               _boost,
+ tchnt_mateconh_boost": atcontent_m     "c      ,
+     cy_boost: recen_boost"cency        "re       
+ ,tent_boostboost": innt_     "inte          
+ score,se_score": ba     "base_       {
+     ctors"] =e_faevancult["rel    res
+        bugging deorion fexplanatance levdd re    # A     
+          )
+     ctor, 1.0e * boost_faor min(base_sc"] =result["sco    reap
+        t with a cply boos# Ap          
+            
+   * 0.1)h_boostatc_mlocation                   
+        * 0.2 + match_boost t_ conten                        
+   0.3 + _boost *ecency         r           
+       4 + oost * 0._bntr = (inte_facto    boost      boosting
+  ssive d excevoi to aoncombinati a weighted       # Use    tors
+  ll boost facith ascore wulate final lc    # Ca 
+                 
+  .2boost = 1ch_ocation_mat     l      
+         s_match:ame_match or nessaddr  elif              
+ .3ch_boost = 1mat  location_               
+   atch:nd names_m_match aaddress if           
+                   e
+  else Fals) if names amese in ns for namrmtelocation_nt.in inteerm r t foer()lown name.wer() iterm.loch = any(s_matname           erms)
+     n_ttiotent.locain ins for term addreslower() in term. = any(ddress_match      a
+          r names address or matches in  # Check fo          
+          
+          s", [])namedata.get("ocation_= l      names           ").lower()
+"ess", "addrget(cation_data.dress = lo     ad          "]
+ location result["on_data =      locati         
+ rms:on_te.locati intentn") andt("locatiof result.ge i          a
+ tion datca with loltsfor resuoosting - match btion . Loca     # 4
+                 
+  1= 1.atch_boost content_m                        o > 0.25:
+f match_rati   eli             2
+    ost = 1.match_boent_        cont          0.5:
+      ch_ratio > at m      elif              3
+= 1._boost tent_matchon c                 :
+      75atio > 0.tch_r    if ma           rms)
+     ntent_te(intent.cos / lenched_termio = mat_rat  match                 nt_terms:
+ ent.content   if i             terms
+ of matchedn rtiosed on propo  # Boost ba                  
+    
+        = 1 +ms_terhed matc               
+        ower:content_lr() in term.lowef     i                erms:
+ent_t.contintentin   for term           ms = 0
+    _terhed  matc             atches
+ m merk for t    # Chec           else:
+           ch
+  rase matxact phoost for eng bro Stost = 1.4  #ch_bocontent_mat                _lower:
+ontenty_lower in cuer   if q  
+       sase matcheact phrr execk fo# Ch          
+             lower()
+ ").ontent", "lt.get("c = resuntent_lower        co)
+    r(_query.lowe originalr =we  query_lo          nt
+ten cones ict matchsting - exa bootch maContent       # 3.         
+    
+      no boostcontent getslder        # O         1.1
+ y_boost = recenc                   month
+ Last:  #  30days_ago <=     elif             1.2
+y_boost =  recenc                 ast week
+  <= 7:  # Lys_agof da   eli          1.3
+   ncy_boost =   rece               y
+   da or yesterday Too <= 1:  #_ag    if days       .days
+     tamp"])eslt["tim() - resu.utcnowtetime(dadays_ago =           ):
+      ""timestamplt.get(    if resu
+         relevantmoreerally tent is gen conewerg - ntinos boecency  # 2. R                   
+ct
+   e aspehing onfor matcerate boost  # Mod.2 boost = 1ntent_    i             tch:
+    or time_maation_match elif loc            
+   ctsh aspehing bottct for maoostrong bt = 1.5  # Sntent_boos       i        atch:
+     _mand timeh n_matcocatioif l                     
+ 
+          ch = True  time_mat                      
+    end_date)):tamp <= mese or tiot end_dat (n                 
+          e) and >= start_datstamp timeate or _d((not startif                      
+                       te")
+    da"end_ange.get(_rdate = time        end_               ate")
+ _det("startnge.gtime_rate =   start_da                      tamp"]
+sult["timestamp = re  times                   
+   range:e_     if tim           rms)
+    t.time_tege(intene_ran_parse_timlf.nge = see_ra    tim          "):
+      mpt("timesta.ge  if result                  
+       
+     ch = Trueation_mat  loc         
+         :n")ocatiolt.get("l   if resu         
+                    h = False
+atc   time_m             False
+ on_match =ocati    l        ime
+    nd th location aot match b thatsultst reboosqueries, id r hybr     # Fo           ":
+== "hybridpe t.query_tyelif inten            
+            .25
+ = 1tent_boost in                        else:
+                   st = 1.25
+ooent_b       int                lse:
+        e            4
+         = 1.ntent_boost  i                      s)):
+     t.media_termm in inten] for tering' 'recordio',oice', 'aud['vterm in  any(                         E and 
+    OICFileType.Vle_type ==     elif (fi                1.4
+     nt_boost =       inte                    :
+ s))rmteedia_in intent.m term ] forage', 'pic''imure',  'pictto',['phoerm in       any(t                     
+ nd  aHOTOe.Pyp= FileTtype =ile_ (f if                      :
+ type  if file_                ype")
+  get("file_tsult.le_type = refi                   erms
+ hes media te matcfile typCheck if      #           ":
+     ile"media_ftype") == et(" if result.g              ults
+ le rest media fi booseries, qur media Fo    #            "media":
+type == ry_f intent.que     eli           
+        1.1
+st = t_booten      in                      0:
+_ago <= 3ysif da      el                2
+  = 1.ntent_boost            i        
+         <= 7:ago if days_      el                 1.3
+ t =  intent_boos                           <= 3:
+f days_ago         i          days
+      mestamp"])."ti) - result[.utcnow(atetimeago = (d       days_              lts
+    resuecentoost re range, bc timspecifi If no        #                e:
+        els        
+     .1t = 1boosintent_                           7:
+       <=s_diff   elif day                   
+      ost = 1.2ntent_bo        i                        :
+diff <= 3 if days_                   ty
+        imid on proxbasest     # Boo                              
+               
+       _diff = 0   days                     e:
+          els                        ays
+  nd_date).dmp - emestas_diff = (ti       day                    date:
+     p > end_estamd time anlif end_dat           e                 tamp).days
+est_date - timdiff = (stardays_                            te:
+    daamp < start_and timeste t_datstar   if                      
+    me rangeto tiity imlate prox # Calcu                          lse:
+       e             ch
+     ime mat exact toost forng b1.4  # Stroboost =     intent_                     e)):
+   nd_datamp <= ete or timestdanot end_   (                        nd 
+ _date) a startstamp >=date or timet_tar(not s if (                                
+           
+    )_date""endge.get(ime_rand_date = t en                       date")
+"start_range.get(e = time_start_dat                    ]
+    imestamp"ult["tesestamp = r     tim                 e
+  ngd time raarsee pithin thfalls wtamp times# Check if                        e:
+ me_rang if ti              erms)
+     tent.time_t_range(inarse_time._p selfnge =e_ratim                    tamp"):
+get("timesif result.           ntent
+     h the time is that matcampmestts with tiulboost resries, ime que  # For t             
+ :" == "timeery_typetent.qulif in       e
+                t = 1.2
+ _boostent        in          :
+          else          .2
+      t = 1osbo  intent_                             else:
+               5
+       = 1.3intent_boost                     s):
+       name in namefor ion_terms locatt. intenerm in() for tname.lowern .lower() i(term   if any                 mes"]
+    "]["nanlocatio = result["ames n                     ms:
+  cation_tert.loend ints") anet("nametion").glocat("lt.ge     if resu               rms
+ query teatcht mthanames with  results boost forr    # Highe                n"):
+ locatiosult.get("     if re           ta
+ daith locationults wboost resn queries, ocatior l # Fo          on":
+      == "locatitypet.query_  if inten   ng
+       tid boosbasentent-   # 1. I        
+            = 1.0
+ match_boost ation_         loc= 1.0
+   h_boost content_matc       = 1.0
+     _boost cency   re        
+  = 1.0stintent_boo           aspects
+  or different foost factorsialize b    # Init 
+               e"]
+    or"scsult[ = rese_score      bae
+      h base scor# Start wit        :
+     all_resultsresult in for      tors
+  multiple faccoring with levance svanced reply ad# Ap  
+        
+         })  
+       d_search"structureource": "  "result_s      
+        sult,        **re        {
+append(l_results.          al
+  s:red_resulttructults.sesuarch_rlt in ser resu      fosults
+  ctured retru sAdd       #        
+    })
+       
+   tor_search"": "vecrceult_sou    "res          ,
+  .locationulton": resati"loc     
+           ce_id, result.sour":id "source_               score,
+result.core": "s                
+timestamp,esult.": rmpesta "tim              text,
+ t.content_sulontent": re"c             _type,
+   .content: resultntent_type"co "          ,
+      "vector"type":   "         {
+    ults.append(res      all_ts:
+      tor_resul.vecultsh_resrcsearesult in    for 
+     r resultscto Add ve   #    
+     []
+    lts = all_resu"
+          ""s
+      ored resultanked and sc of r        Listurns:
+           Ret        
+      text
+eryal qu Origininal_query:     orig  nt
+      intearsed query P     intent:      h results
+ ed searc Combinrch_results:        seas:
+      Arg    
+      oring.
+    evance scdvanced rel asults withh reined searc score comb Rank and
+       """    ]]:
+    ct[str, Any[Dist ) -> Li
+   str_query:     original  
+  nt,Intentent: Query
+        ihResult,s: Searcch_result sear   ,
+     self(
+       ore_resultsd_sc_rank_andef    
+    
+ ultsresn      retur  
+   
+      tr(e)}")failed: {search le sfif"Media g(.warningerog l         e:
+       Exception as  except 
+                       
+       })             e
+       orl_sccore": fina  "s            
+          se None,latitude ele and media.ud.longit} if media                     
+   dia.names": me    "names                        
+ia.address,s": medres  "add                    
+      None, else udelatitf media.tude) i.latiloat(media": ftitude        "la                 
+   lse None,e eia.longitude) if medgitud(media.lonoattude": fl  "longi                    : {
+      cation"  "lo                 ,
+     athdia.file_p": meathe_p   "fil               ,
+      _typeia.file": med"file_type                       
+ timestamp,p": media."timestam                   }",
+     d'meUnnaename or '_filiginala.or{mediile: } ftitle()file_type."{media.ent": fnt "co                       ia.id),
+(med: str"id"                   e",
+     "media_fil"type":                     
+    s.append({     result    
+                           )
+    e_score, 1.0 = min(basorel_sc        fina      
+      at 1.0ore p sc    # Ca             
+                  .05
+     _score += 0  base                 <= 7:
+     days_ago         if        s
+     estamp).dayedia.tim - mime.utcnow()datetago = (     days_            media
+    or recentre ft sco      # Boos            
+                    break
+                                5
+  = 0.0e_score +       bas                         a.names):
+ in medime naower() for) in name.l.lower(erm any(t        if                   rms:
+ teation_locm in intent.     for ter               
+    terms:nt.location_nd intes af media.name     i          
+     tchesion malocatt score for os        # Bo        
+                     1
+   re += 0. base_sco                  
+     pes:in file_ty_type ia.filemedand _types      if file             
+  tchesfile type ma score for # Boost           
+                        
+      = 0.8orebase_sc               core
+     e base satul# Calc               les:
+     in media_fifor media         g
+        corinh dynamic s results wit   # Process                   
+       ))
+   (m.id(stria.addmedcombined_                                 m)
+   end(iles.appa_fdi   me                             edia:
+    ombined_md) not in cif str(m.i                             
+    m in media:or         f                  )
+                         5
+    t=_type, limiler_id, fidb, use                             ype(
+   et_by_file_tository.gepfile_rawait media_    media =                        
+ pe:file_tyif                 
+        [None]:s or ile_typee_type in fr fil   fo          
+       les) < 5:a_fin(medif le   i        
+     sultsenough reave e don't h wype only ifch by file t Sear    #        
+                  ))
+  str(m.iddia.add(combined_me                             pend(m)
+   s.apdia_file         me                     ia:
+  edbined_min com) not if str(m.id                           n media:
+ m i       for        
+               )            t=5
+         limi                         ype,
+ e=file_t file_typ                    
+       nd_date"),e.get("ete_rangry_filter.daate=que     end_d                
+       "),datert_.get("sta_rangeter.da_filtet_date=query  star                 
+         , user_id,   db                   
+      _range(ate_user_with_d.get_bypositorye_re media_filitedia = awa       m                None]:
+ s or [typein file_ile_type r f     fo          ange:
+     .date_rtery_fil   if quer    
+         filterype  with file tnge date rah by     # Searc          
+               )
+  tr(m.id)dd(smedia.a combined_                         (m)
+      iles.appendedia_f          m           
+           a:bined_mediomn c) not itr(m.id     if s                     media:
+   m in      for                    )
+                      limit=5
+ e, e=file_typ_typ, filetion_termsntent.loca, user_id, i db                          
+ (amesy_nory.search_bepositia_file_r= await medmedia               
+          r [None]:file_types on  ipetyfile_      for            terms:
+   ation_.loc intent    if       r
+     ilteile type fmes with fon nach by locati  # Sear               
+           E]
+    eType.VOICilHOTO, Fype.PFileTtypes = [ile_  f               ":
+   dia= "mequery_type =tent.d inantypes file_     if not 
+           typesarch all query, seut media ned btioes men file typcific # If no spe              
+       
+          VOICE)pe.FileTys.append(ypeile_t   f            :
+         ng']o', 'recordi'audiice', n ['vorm i    elif te             HOTO)
+   FileType.Pnd(s.appeile_type     f             c']:
+       'pie', 'image','pictur ['photo', rm in te if        
+           edia_terms:n intent.mr term i   fo          = []
+   s ile_type      f         erms
+ ia tes from med file typDetermine     #            
+              tes
+  void duplicao ae set t set()  # Us =diaombined_me  c              
+[]iles =      media_f
+           :    try":
+        dia"me ery_type ==ntent.quor ier _filthas_mediant. if inte
+       d filteringhances with en media file# Search       
+  
+       (e)}")ed: {strh failrcxt note seaing(f"Teer.warnogg  l     
+          as e:xceptiont E   excep                
+         
+      })                ore
+  l_scinaore": f"sc                       None,
+ tude else  note.latide and.longituif note  }                     names
+  mes": note.       "na                 ess,
+    ote.addr nddress":     "a                       None,
+ tude else.latiif noteatitude) at(note.lude": flo"latit                      ne,
+      lse Notude e.longide) if notelongituat(note. flo":de"longitu                            
+n": {atio"loc               
+         mp,ote.timesta": n"timestamp                 
+       xt_content,lse note.teent) > 200 ext_cont.teif len(note+ "..." t[:200] ntente.text_coontent": no     "c                e.id),
+   not": str( "id             
+          note", "text_"type":                        pend({
+ults.ap         res                
+               ore, 1.0)
+(base_scinore = ml_sc fina                 at 1.0
+    score  # Cap                 
+                05
+     += 0.core       base_s              7:
+     go <=ays_a     if d      s
+         tamp).daye.timesnow() - not.utctimeo = (date days_ag         
+          ecent notes for rBoost score         #    
+                            break
+                                0.1
+e_score +=   bas                        ):
+      .namesame in noter ne.lower() fo) in namer(rm.lowny(te     if a                      erms:
+ cation_tin intent.lo  for term                
+       ms:location_ter and intent.note.namesif                   
+  atches mlocationre for t scooos   # B                     
+              05
+  score += 0.base_                              lower:
+  t_ontenin c() f term.lower       i                  rms:
+   ontent_teent.crm in int  for te                      
+t.lower()ext_conten= note.tr t_lowe  conten                    rms:
+  ntent_teent.cont i   if          es
+       erm matchtent te for conscorost # Bo            
+                           
+ core = 0.75ase_s          b       core
+   ulate base s     # Calc               otes:
+ in text_n note        for        scoring
+namic  with dycess results# Pro        
+                  d))
+      str(note.inotes.add(d_mbine         co            e)
+       ppend(nototes.a    text_n                       :
+ bined_notesnot in comtr(note.id) if s                    tes:
+    no date_in for note              
+           )          
+         limit=5                    date"),
+t("end_nge.gee_ra_filter.datuery end_date=q                    
+   date"),et("start_.grangeate_lter.dry_fidate=quetart_           s        r_id,
+      db, use                     range(
+  date__user_with_ory.get_byte_repositext_noes = await t  date_not             < 5:
+     s) ote_next and len(te_range_filter.dat    if query           cified
+ nge if speate raarch by d       # Se         
+         ))
+       (str(note.idotes.add combined_n                                       e)
+(notnotes.append       text_                               s:
+  ned_notenot in combiote.id) if str(n                                  otes:
+   in n noteor         f                                )
+                      mit=3
+ id, term, liser_       db, u                             ntent(
+_by_co.searchrysitoepotext_note_r = await  notes                            terms
+    meaningfulch with  # Only searerm) > 3: f len(t           i           
+      rmstefirst 3 o imit ts[:3]:  # Lt_termenntcon intent.or term i          f             :
+ t_notes) < 5f len(tex           i       s
+  h resultt have enougwe don'ms if ual ter individry        # T                
+          d))
+      r(note.ies.add(stnotned_  combi                          
+        d(note)_notes.appen      text                              notes:
+mbined_ot in co) n.idtr(note        if s                    otes:
+     nnote in   for                   
+        )                      
+     3it=, limtermcombined_user_id,  db,                        (
+        ontent.search_by_ce_repositoryt_not texawait notes =                        +1]}"
+    nt_terms[iconte} {intent.erms[i]_ttentintent.con = f"{ermbined_t     com                   1):
+    - erms) .content_tlen(intente(i in rangfor                   
+      rs of termspai# Try                   :
+      ) > 1ontent_termsn(intent.c       if le          tching
+    ma betters fortermations of ombin   # Try c               :
+  erms_ttentnt.conif inte           ng
+     ntic matchi sematterber ent terms foontby c# Search                       
+     d))
+     tr(note.ites.add(sno  combined_                       te)
+   end(noappes.text_not                            tes:
+combined_noin ot te.id) n if str(no                   s:
+    noteor note in  f                  )
+              
+       ms, limit=5location_terntent. user_id, i         db,               s(
+mech_by_naory.searnote_repositt_exait t notes = aw          
+         s:on_termnt.locati    if inte      
+      presents er iion filt location names ifch by locat# Sear                   
+           plicates
+   avoid dut to  # Use seet()notes = sined_      comb         []
+  text_notes =          
+         try:        r:
+ _time_filtet.has intenfilter ors_location_t.ha"] or intenbrid", "hyn ["generaltype it.query_ inten  if    tching
+  content maanced tes with enhtext noh earc    # S   
+         r(e)}")
+ failed: {starchisit sen vLocatiorning(f" logger.wa            as e:
+    on Excepti     except 
+                 
+             })                _score
+inal": fre       "sco            
+     on,scripti visit.deption":scri   "de            
+               },                 t.names
+ ames": visi      "n                  ress,
+    sit.adds": vi  "addres                         tude),
+ atit(visit.lfloa": "latitude                          itude),
+  isit.longloat(vtude": f   "longi                   
+      on": {  "locati                  ,
+    t.visit_timep": visitam   "times                   ')}",
+  H:%M%Y-%m-%d %ime('ime.strftt.visit_tsi} on {vi'location'.address or ed {visititistent": f"V "con                    it.id),
+   (vis str  "id":            
+          on_visit","locati"type":                         ppend({
+ results.a                           
+       
+     score, 1.0)in(base_re = m   final_sco           .0
+      at 1e or # Cap sc                     
+              
+     0.05re +=_scobase                       10:
+ ion) > descriptisit. len(viption anddescrt.f visi         i          
+ criptions des visits withcore for s  # Boost                  
+                    e += 0.05
+ base_scor                      <= 7:
+ _ago      if days             s
+  t_time).dayvisit.visi.utcnow() -  (datetimes_ago = day                  its
+ nt visfor receore  Boost sc #              
+                         break
+                           0.1
+      ase_score +=   b                           ames):
+  sit.nr name in vifolower() () in name.werloy(term.   if an                
+         rms:tion_tecan intent.lorm itefor                
+         :termson_.locatitentes and invisit.nam         if         matches
+    name st score for     # Boo                      
+            .85
+ score = 0     base_              s
+ er scores get highact matchere - exe scoe basatalcul # C           :
+        n_visitscatio visit in lo     for       coring
+    c swith dynamilts Process resu #               
+        )
+         sits_vixtend(datesits.ecation_vi        lo                   )
+                 
+    limit=10                          ,
+  ate")("end_dgetange.lter.date_rte=query_fi     end_da                  "),
+     rt_datet("sta.gee_rangelter.datte=query_fi   start_da                        user_id,
+   db,                
+           (ngeth_date_raby_user_wiitory.get__visit_repost locations = awaiitate_vis d                   e:
+     els                  e range
+  with datdirectlyrch sea Otherwise,      #       ts
+        visiltered_sits = fion_vi  locati                           
+            )
+       end(visitppsits.aered_vi   filt                            date)):
+ d__time <= envisitit.isd_date or vt enno     (                    
+       t_date) andtime >= starsit.visit_ate or vit start_d  if ((no                          s:
+ion_visitatn loc for visit i                         
+           
+           )nd_date"nge.get("e_ra_filter.dateryte = que  end_da                ")
+      "start_date(.getr.date_rangeery_filtee = qu start_dat               ]
+        sits = [d_vi  filtere                      s:
+_visition  if locat          
+         by dateer themts, filtation visiochave l already   # If we           
+       e:date_ranguery_filter.f q       i         pecified
+ring if s filteate range Apply d       #             
+      
+      ts)isind(vexteisits.ation_v    loc                         )
+                       mit=5
+    rm, li, teb, user_id          d                      s(
+_addressearch_byory.repositn_visit_ locatio awaitits =  vis                       terms
+   ingful with mean search # Only  (term) > 3:   if len                   rms:
+  cation_tein intent.loerm  t         for          terms:
+ tion_t.locand intenisits aon_vcatiot lo     if n       sults
+    re if no archdress seThen try ad        #   
+                  )
+                      limit=10
+  erms, ocation_t.lntenter_id, i     db, us                  by_names(
+ earch_.sepositoryon_visit_rtioca lits = awaitocation_vis    l               erms:
+ tion_tent.locant     if i         matches
+  exact name rst try    # Fi            esults
+ r better rtrategies fone search sombi       # C
+                      ts = []
+   ation_visi      loc            try:
+  
+        "]:d "hybriation", in ["locry_type intent.quelter ortion_fica.has_lointentif 
+         filteringith enhancedsits wion vih locat # Searc  
+          = []
+         results""
+   
+        "ssultd search reof structure  List          turns:
+       Re      
+  n
+      sessioe basb: Data d        ers
+   ry filtfilter: Queuery_         q
+   ntentry iqueent: Parsed          int
+    isolationID forid: User      user_    :
+     Args  
+      
+      filtering.h advanced it intent wd on queryd data basestructurearch Se
+           """]]:
+     str, Any> List[Dict[) -
+    essioncSAsyn      db: er,
+  Filt: Query_filter    queryt,
+    en: QueryInt      intent,
+  ser_id: UUID   u         self,
+data(
+    ured_earch_structnc def _s
+    asy0
+    urn 0.        ret
+     else:    
+   d_scoreructuren stretur   :
+         red_resultsf structu       eliscore
+ r_rn vectoetu   r   
+      results:f vector_     eli   eight)
+ured_wructscore * st(structured_ight) +  vector_wer_score * (vectorn       retuts:
+     resulured_ structts andctor_resul if ve
+       ghted scoreeiCalculate w #  
+             
+ _results)n(topsults) / leop_re r in t0) forore", "scsum(r.get(core = ed_surruct        st[:5]
+    everse=True)", 0), r"score x.get(mbda x:=laults, keyctured_resstruted(ults = sor   top_res      oring
+   or scresults f 5  top      # Use   s:
+   d_resulture if struct       = 0.0
+d_score   structure    
+          ults)
+p_resn(to/ le_results) n top ir rcore fo = sum(r.sscoreor_    vect
+        True)[:5]verse=x.score, relambda x: s, key=_resultctororted(ve= s_results top     ing
+       r scorlts fo5 resup Use to#            results:
+ vector_
+        if score = 0.0    vector_s
+    culate score Cal #
+         .5
+      ight = 0tured_westruc           ht = 0.5
+ tor_weig vec       e":
+    "timype == uery_tnt.qf inte     eli 0.6
+   ght =weired_   structu      .4
+    0ght =  vector_wei       tion":
+   locaype == "uery_tif intent.q  t
+      n intenghts based ot weidjus    # A        
+  
+  0.4t = ed_weighctur stru       t = 0.6
+gheir_w    vecto
+    ult typesifferent reseights for d    # Base w"""
+       score
+      relevance   Combined
+          turns:
+        Re          
+   intentt: Queryen     int      results
+  search ructuredts: Stred_resultu       struclts
+      search results: Vectortor_resuec           v Args:
+ 
+       
+        esults.r search rnce score fovaned releombi a clculateCa     """
+   
+        float:   ) -> ent
+  QueryIntent:        inty]],
+str, AnDict[List[results: d_ucture
+        strt],earchResulorS List[Vectesults:_r    vector,
+       self
+     ore(ined_sclculate_comb_ca  
+    def  )
+      ype
+       lt_tresuesult_type=        r
+    _score,mbinedned_score=combi   co   
+      d_results,ructureesults=sttured_r    struc     s,
+   esultvector_rlts=tor_resu        vec    ult(
+ SearchRes  return    
+      t)
+    sults, intenctured_restruults, res(vector_d_scorembine_coalculate_cre = self.d_sco    combine
+    ed approach weight score withmbinedlate co # Calcu       
+
+        = "hybrid"t_type    resul         sults:
+or_res and vectred_resultelif structu       "
+ edtructur "sype =_t     result     
+  lts:resuot vector_sults and nctured_re   if struor"
+     = "vectt_type     resul    t type
+mine resul   # Deter     
+   ")
+     tsesulults)} rured_res{len(structturned arch retured sef"Strucgger.debug( lo       
+               )
+ , dby_filterintent, queruser_id,                 d_data(
+_structureelf._searchts = await ssuluctured_restr           er:
+ time_filttent.has_r in ofilteration_has_locntent. or ihybrid"]", ""timelocation", ["y_type in querntent.  if i
+       on intentedrch basa seatured datuc str # Perform         
+ 
+     lts = [] vector_resu       }")
+    tr(e) failed: {s searchor(f"Vecter.warninggg   lo
+         n as e:pt Exceptio    exce    
+          )
+  else 0}"results ector_f vs) ictor_result) / len(ve_resultsr in vectorcore for "{sum(r.s      f            : "
+      h avg scoresults wits)} relt(vector_resued {lenreturnch ector sear"Vger.debug(f   log       
+   metrics# Log search           
+          ults)
+   resel(vector_odto_mults_esch_rert_searservice.convng_mbeddits = self.eul  vector_res   ls
+       ult modeResrSearchto Vectort    # Conve        
+            )
+          r
+   _filteationer.loc_filtery=quion_filter  locat        nge,
+      _raateer.d=query_filtate_range  d            core,
+  ore=min_smin_sc               s,
+ tent_typeer.cons=query_filttent_type  con          _k,
+    earchk=s        y,
+        er=qu   text         vacy
+    rior pcal f is critilationso # User i=user_id,      user_id           async(
+t_exy_te.search_bing_servicf.embedd = await selts_resulorect   v        earch
+  in the slationper user iso we have pro# Ensure                 try:
+   solation
+r ith usewirity search imilaector sm v    # Perfor     
+    )
+   * 1.5R_SEARCH_K VECTOint(DEFAULT_= search_k             me later
+filter by tilts to  more resue wante queries, w  # For tim
+           "time":_type ==ery intent.qu     elifd
+   reshol score thinimumease mIncre + 0.05  #  min_scorin_score =     m  s
+     ultector rese v # Reduc) K * 0.7EARCH_T_VECTOR_S int(DEFAUL =search_k         
+   tsor resulnt vect wata but stilltructured daize spriorit we es,cation queri # For lo    ":
+       tione == "locatypt.query_inten       if eters
+ rch paramjust sea we can adic intents,or specif        # F
+        min_score
+y_filter.core = querin_sK
+        mARCH_T_VECTOR_SE_k = DEFAUL   searcht
+      on intenrs basedch paramete Adjust sear        #
+       ts = []
+ ctured_resul       struts = []
+ or_resulct
+        ve  """
+      resultsd ure and structectorith vhResult w    Searc     
+    Returns:  
+       
+          se sessionb: Databa   d         ilters
+y f: Queruery_filter    q
+        uery intentd qntent: Parse     i      ry text
+ al queOriginquery:             solation
+ser ID for ir_id: Use        us:
+          Arg    
+  ers.
+    ltnt and fiery intebased on quch m sear Perfor"
+          ""ult:
+     archRes ) -> Seion
+   esssyncSdb: A
+        ter,QueryFily_filter:         queryIntent,
+: Quer intent       uery: str,
+      q: UUID,
+     user_id
+      self,   earch(
+    _serformasync def _p
+    
+    eurn Non     ret   
+        
+          }
+  _date or now end_date": "end             ,
+  365))delta(days=- time(now r e oart_dat_date": start     "st          turn {
+    re       
+  end_date:art_date or     if st  
+  
+         = nowdated_         en=0)
+       econd0, micros0, second= minute==0,1, hourplace(day=ate = now.re  start_d              wer:
+lo" in term_is month   elif "thw
+          no end_date =        0)
+       cond=microseond=0, nute=0, sec(hour=0, mi.replace= start_date_date     start            )
+ce_mondayins=days_selta(day - timedt_date = nowtar      s
+          w.weekday()ay = noce_mond    days_sin        nday)
+     week (Mo of current# Start            
+    term_lower:" in ek "this we       elifow
+     = n_date   end             s=365)
+ a(dayelt timed= now -_date    start            
+ lower:r" in term_ast yea"l   elif      now
+     end_date =            =30)
+    lta(days- timede now t_date =ar     st         r:
+   term_lowenth" in"last moif          el
+   now_date =          end7)
+       ta(days=delow - time = ndate start_          
+     r:in term_loweast week" "lif    el         99)
+ond=9999rosec, micsecond=59inute=59,  m=23,e(hourlacerday.rep yestdate =nd_   e        d=0)
+     icroseconond=0, m=0, sec, minutee(hour=0erday.replacestdate = y     start_          s=1)
+ ta(dayelimeday = now - t   yesterd         
+    rday":"yestem_lower == f ter      eli999)
+      ond=999secmicroond=59, nute=59, secur=23, mi(hoacenow.replend_date =       
+          cond=0), microse0, second=0minute=ur=0, .replace(ho nowrt_date =  sta           ":
+   todaylower == " if term_          terms
+ ive elat Handle r    #     
+              r()
+ we term.lo_lower =       term    _terms:
+ erm in time     for t  
+       e = None
+  end_dat    None
+    e = start_dat      utcnow()
+  time.= date    now   
+    None
+          return      erms:
+   f not time_t   i    ""
+       "or None
+  _date, d endantart_date  snary with   Dictio        
+   Returns:  
+              terms
+  ted ela time-r of List time_terms:          
+ Args:              
+ 
+ ate range.a ds into rme time tePars       """
+        ime]]:
+ datetr, ict[stonal[Dtr]) -> Opti[sListerms: lf, time_t(serangeparse_time_f _    
+    deilter
+uery_f  return q            
+ 
+ ange time_rnge =e_rar.datquery_filte                 e:
+     els           te}
+   ": end_da "end_datete,: start_dat_date""starnge = {lter.date_rauery_fi    q       
+                   )          ]
+"end_date"ate_range[lter.dry_fi      que                  "]),
+["end_dateangeter.date_r, query_fil"end_date"get(e_range.im t                      
+ date = min(end_                     )
+              e"]
+     start_date_range["r.dat_filte query                      date"]),
+ "start_ange[date_r_filter.query", start_date"range.get(      time_                max(
+   t_date =ar   st             
+    ion limitssubscriptine with mb       # Co             nge:
+.date_raeruery_filtf q     i    ge:
+        time_ran      ifms)
+      ime_tertent.te(in_rang._parse_timerange = self    time_:
+        _filter.has_timent inte ifrs
+       teme fily ti  # Appl
+                  }
+        ms
+er_tationent.loc: int   "names"             
+= {lter location_fiuery_filter.   q    erms
+      location t geocodeon, we couldimplementatid dvanceore an a m       # Ing
+     rite fil text-baseds forocation term use lr now, we'll  # Fo     r:
+     ilteon_ft.has_locatintenf i   ilters
+     on fi locatily       # App        
+ nt_types
+pes = contet_ty.contenquery_filter        
+        t_types:en cont       if     
+           )
+ SCRIPT.VOICE_TRAN(ContentTypeappendpes. content_ty         
+          ording']:, 'recudio'e', 'am in ['voicer     elif t          SC])
+ _DEType.IMAGEContentMAGE_TEXT, entType.I([Contextendtent_types.    con               'pic']:
+  age',e', 'imo', 'picturhotrm in ['p  if te    
+          terms:t.media_ten inrm in for te      
+      []ent_types =ont         cer:
+   iltia_ft.has_med  if inten      terms
+n media rs based o type filtecontentply  Ap   #     
+     
+   ngete_range = date_rary_filter.da      que
+      ate_range:      if did, db)
+  er.te_range(us_daeryqut_lf.geawait sege =     date_ranlimits
+    nge date rabased ubscription-ply s        # Ap
+        
+eryFilter()Qufilter = uery_
+        q      """s
+  terpriate fil approyFilter with        Querturns:
+    
+        Re           
+ ssion Database se       db:t
+     ery intent: Parsed qu   inten       query
+   g the: User makiner        us      Args:
+  
+            .
+limitsubscription user sintent and er based on ery filte qu      Creat  ""
+       "
+ ryFilter:   ) -> Queion
+ b: AsyncSess        dtent,
+nt: QueryIninte  
+      r,Use    user: f,
+      seler(
+      _filtte_querydef _creaasync    
+       )
+ a
+     dihas_meer=dia_filtmeas_         hs_time,
+   ter=hame_fil      has_tin,
+      locatioter=has_iltion_floca      has_
+      tent_terms,onnt_terms=c  conte   ms,
+       ia_terrms=medtemedia_          e_terms,
+  erms=timime_t    t  s,
+      ion_term=locatermsocation_t   l        ry_type,
+ quey_type= quer          
+ ueryIntent(eturn Q     r    
+       edia"
+ = "muery_type    qa:
+        has_medielif "
+        "timetype = ery_  qu       e:
+   if has_tim
+        eltion"= "locauery_type           qon:
+  ocati_llif has  eid"
+      pe = "hybrry_ty   que   
+      _time:hasd ocation an if has_l             
+terms)
+  ool(media_ b_media =       has)
+ ermstime_t = bool(has_time
+        _terms)location = bool(ocation_l
+        haseneral" = "gery_type
+        qu query typenermiete  # D       
+       ]
+rd) > 2en(woords and ln stop_w word not i in words if for word[word = rmsontent_te c)
+       lower query_+\b',r'\b\wdall(re.fin  words =   
+                    }
+ 'their'
+our',   'its', '         'her',
+', , 'hisy', 'your', 'm', 'them', 'her', 'ushim'', 'me', ' 'they 'we',t',         'ishe',
+   ', 'he', 'youose', 'i', 'th', 's', 'these, 'thi', 'that', 'which'how', 'who'            hy',
+hen', 'w, 'wwhere'', 'hat'w'can', st', might', 'mu'may', ', 'should', d'oul  'c
+          l', 'would','did', 'wiles', doo', ' 'had', 'd 'has',',, 'have'being'en',   'be', 'be
+          , 'were',, 'was's', 'are''ir', 'over', ng', 'undeen', 'amo, 'betwew'', 'belo    'above     ',
+   e', 'after 'befor'during',gh', ', 'throu, 'into', 'about'rom', 'up 'by', 'f          , 'with',
+ for', 'of''to', 'n', 'at', ', 'in', 'o 'or', 'but'and',', 'an', , 'ae'       'ths = {
+       stop_word     p words)
+ emoving stoer r words aftiningms (remant terxtract conte# E  
+      
+        nd(matches).exteedia_terms  m       SE)
+   NORECAower, re.IGery_lquattern, indall(p re.f   matches =   rns:
+      dia_patte in meattern    for p    
+terms = []      media_      
+  hes)
+  end(matcextrms. time_te           GNORECASE)
+ower, re.Irn, query_lpatteindall( = re.f  matches          :
+_patternstern in timefor pat   
+     []terms =      time_
+       ches])
+    in mat match for] se match[0) elatch, strinstance(mmatch if isms.extend([on_ter  locati       E)
+   GNORECASer, re.I, query_lowrnindall(pattees = re.f match         :
+  atternscation_pern in loatt for p]
+       erms = [location_t  
+      msertract t     # Ex    
+               ]
+clip)\b'
+\b(?:video| r'         )\b',
+  teg|no|recordin:voice|audio(?\b         r',
+   ic)\b'e|image|poto|pictur'\b(?:ph r        [
+    erns =_pattdia       me terms
+ elatededia-r# M        
+        
+ ]    \b'
+   :am|pm)?\s*(?2}:\d{2} r'\b\d{1,           ',
+4}\b]\d{2,,2}[/--]\d{1{1,2}[/\b\d r'           ng)\b',
+until|durir|since|re|aftebefogo|\b(?:ar'      ,
+      t)\b'ning|nighn|eveafternoob(?:morning| r'\
+           ember)\b',ecnovember|der|october|ust|septembune|july|augril|may|jry|march|apruaanuary|feb:j    r'\b(?   ',
+     |sunday)\bdayfriday|saturthursday|day|dnesy|wedaesr|monday|tuth|yeaeek|mon\s+(?:whis|next)\b(?:last|t      r'\b',
+      ow)day|tomorryesterday|to    r'\b(?:
+        s = [e_pattern      tim terms
+  tedla# Time-re 
+               
+        ]
+vd)\b'blard|boulevd|drive|dr|ve|road|rue|a|aveneet|st\s+(?:str-z]+)*)A-Z][a+[[a-z]+(?:\s r'\b([A-Z]           el)\b',
+|beach|hotgym|parkhome|work|ice|shop|off|store|urant|cafe(resta r'\b          ',
+ \s]+)*)s+[^,?:\+([^,\s]+(|to)\sfromd||arount|in|near\b(?:a   r'       [
+   erns =ttcation_pa
+        loelated termscation-rLo#                
+
+ ry.lower()wer = que_lo       query"
+ ""      rmation
+  ed infowith parst   QueryInten           Returns:
+   
+       y
+         age querangu: Natural lquery    s:
+               Arg
+ 
+        ey terms.ract kxt and eintentermine ry to detguage quenatural lan   Parse ""
+             "ryIntent:
+ue) -> Qy: strelf, query_intent(sparse_quer
+    def _
+              ) query"
+  d to processFailetail=" de            RROR,
+   VER_ENTERNAL_SER.HTTP_500_I=statustatus_code  s         n(
+     eptioTPExc   raise HT    ")
+     )}: {str(equeryess o procd tor(f"Faileger.err log           e:
+xception as t E excepse
+        rai          ception:
+ xcept HTTPEx      e
+     
+         response  return           
+         
+    db)ge(user.id,y_usaquernt_.incremee_service await usag           king
+sage tracate uUpd#                     
+             )
+
+   esults, db ranked_rt,uesr, query_req      use
+          ponse(erate_resself._genit awaponse =  res       onse
+    sp reerate # Gen           
+     )
+                  y
+ est.queruery_requintent, qch_results,       sear  
+        ults(ore_resank_and_scf._rlts = selanked_resu       r   lts
+  sureore d scRank an       # 
+                   )
+           db
+_filter,tent, queryst.query, inquery_reque, user.id       (
+         chorm_searf._perft sel = awaih_results  searc
+          t intenonbased search  Perform         #    
+           ent, db)
+ er, inty_filter(useate_querself._cr await ilter =ery_f  qu  n
+        criptio user subsintent ander based on e query filt   # Creat
+            
+         type}")ntent.query_ {intent:ry iarsed que"Pg(fdebuer.        loggquery)
+    est.t(query_requntense_query_ielf._partent = s in       tent
+    query ine  # Pars                  
+  )
+                  "
+ ededxceimit ely query lil="Dai deta              S,
+     UESTNY_REQ_TOO_MA29us.HTTP_4us_code=stat stat            n(
+       PExceptio HTT    raise        , db):
+    ry(user.iduecan_make_qervice.e_susagt await if no           
+ usage limitsck he    # C  y:
+      tr        "
+"    "    ng fails
+ry processin: If quetioTTPExcep        Hs:
+           Raise      
+     sources
+  wer and nse with anseryRespo     Qu     :
+  Returns  
+                  session
+ Database  db:       a
+    datst que Query reest: query_requ          he query
+ g t: User makin      userrgs:
+        A   
+      ts.
+     t resulvanrn releand retuguage query l lana naturas   Proces        """
+ 
+     se:esponQueryR    ) -> yncSession
+     db: As
+   uest,st: QueryReqquery_requer,
+        er: Use    us   
+ lf,        se(
+cess_queryync def pro    
+    aslse
+   return Fa
+         eption:Except HTTP        excdb, user)
+query_limit(ly_check_daige_service.t usaai   return aw   
+      xceededs e ion if limiteptiise an exchis will ra   # T              try:
+   
+           )
+ 
+    _attion_expires.subscrip=user_dbres_attion_expiip     subscr       n_tier,
+ptiocri_db.subsserr=uiption_tiescr    sub        re_url,
+turofile_picb.p_durl=userure_ile_pictrof     pme,
+       b.display_na_duserisplay_name=  d      ct,
+    _subjeer_db.oauthct=ussubje     oauth_,
+       viderb.oauth_provider=user_dth_pro     oau    il,
+   =user_db.emaemail          .id,
+  user_db       id=    er(
+    user = Us   DB model
+  model from e User      # Creat       
+   
+ rn False       retu
+     its") limery checking quund whenot fo {user_id} n"Userr.warning(f  logge    :
+      not user_db        if  
+    irst()
+   ars().fcal = result.ser_db us    
+   cute(stmt)wait db.exe= aresult       r_id)
+  use== d DBUser.i.where(er)DBUst(= selec    stmt  tier
+    iptionine subscrr to determ# Get use
+              """wise
+  er, False otha querye can mak user      True ifns:
+       Retur      
+           ssion
+    sebasetab: Da   d  
+       IDer d: Ususer_i             Args:
+   
+         .
+   ly limitsased on daie a query b mak user canif   Check      "
+      ""   bool:
+ion) ->syncSess AID, db:d: UUelf, user_i_query(san_makeasync def c
+                }
+  
+  : end_date_date"      "ende,
+      rt_datate": stastart_d    " {
+            return   
+      
+   nths to daysroximate mo 30)  # Appory_months *a(days=histe - timedeltend_datate = start_d
+        e.utcnow()= datetimend_date       te range
+  te dala Calcu       #
+        
+ n Noneur    ret
+        nths == -1:istory_mo      if her
+   tir promited fo# Unli
+              "]
+  y_months_historts["queryier_limiy_months = t      histor)
+  ive_tiermits(effectier_lirvice.get_t= usage_seer_limits 
+        tiser)tier(uon_scriptiective_subet_effe_service.ger = usagtive_tifecef
+        rationng expisiderive tier con Get effecti        #      
+    )
+  s_at
+    on_expireiptiscr=user_db.subres_atpiription_ex   subsc   r,
+      on_tieticripubsr_db.sseon_tier=u subscripti           e_url,
+icturle_pfi.proser_dbe_url=uctur_pile profi       e,
+    nam_db.display_e=userdisplay_nam           _subject,
+ th=user_db.oauauth_subject      or,
+      ideov_db.oauth_pruserrovider=uth_p     oail,
+       .ema=user_dbail      em  id,
+    ser_db.     id=u  
+     user = User(       B model
+ el from DUser modeate     # Cr     
+e
+        return Non        
+   ")date rangeing query tthen ged wd} not founser_i {uf"Userr.warning(gge          lodb:
+  r_ if not use   
+       t()
+     .firsrs()sult.scalar_db = re   uset)
+     execute(stmit db.result = awa  )
+      id user_DBUser.id ==here(er).wect(DBUsmt = sel
+        stiption tierine subscrermser to dett u     # Ge"""
+        ed
+   if unlimitne r Noe, oatd_dte and enrt_dary with stactiona  Di   :
+        Returns    
+           sion
+    sesse  db: Databa          ID
+  er_id: User          us
+    Args:   
+      ier.
+     scription ts subd on user'basee range  datowed query Get the all       """
+  e]]:
+      imett[str, datnal[DictioOpession) -> ncSD, db: Asyd: UUI, user_i(selfrangequery_date_c def get_
+    asyn      rvice")
+  ssingSed QueryProceializenfo("Initer.ilogg        ce
+dding_service or embeding_servibed= emrvice mbedding_se      self.e"
+       ""  e
+ ce instancng servimbeddial eonice: Opti_servedding emb      rgs:
+       A        
+   ice.
+   rvessing seuery procialize the q Init        """
+      
+ e): = NonervicengSbeddi_service: Em embeddingnit__(self, def __i
+    
+   ""   "
+ t ranking., and resulta filteringtured da
+    struc,rity searchctor similath veries wiquel language g naturainor processervice f
+    S """ervice:
+   ingSyProcess Quer
+
+
+class Falsel = booa_filter:_medi    has
+seal: bool = Fer_filt    has_timee
+= Falsbool : ion_filter_locatas]
+    hList[strrms: t_te
+    contentr]ms: List[sa_ter medit[str]
+   ms: Liser   time_t]
+ s: List[strn_term  locatioid"
+  , "hybr, "media""time"n", ocatioal", "l # "genertr uery_type: s q"""
+   y intent.rsed querodel for pa"""M
+    eModel):ntent(Basclass QueryId"
+
+
+ybritured", "hrucstvector", "  # "tr: sult_type res
+   ore: floatbined_sccom    str, Any]]
+Dict[lts: List[esuructured_r   sthResult]
+ arct[VectorSeLis_results: tor   vec"
+ lts.""resusearch ned combil for """Mode   
+ aseModel):esult(Bass SearchR
+
+
+cl_MAX_RESULTSLTt = DEFAUs: inresultRE
+    max_COAULT_MIN_Sfloat = DEFe: n_scor    miNone
+tr, Any]] = ional[Dict[silter: Opt location_f = None
+   datetime]], [strptional[Dicte: Oate_rang
+    de]] = NoneContentTypnal[List[Optioypes: t_t   contenrs."""
+ eteing paramry filterr que"Model fo"":
+    del)seMo(BaFilter Queryclass
+
+lts
+r resue fonce scorm relevamu65  # MiniRESHOLD = 0._TH
+RELEVANCEtentr recent conr foctooost fa  # BFACTOR = 0.2OST_ECENCY_BO0
+RAYS = 3DOW_DTIME_WIN5.0
+ = S_KMDIUCH_RACATION_SEAR
+LOTS = 10_MAX_RESUL.7
+DEFAULTSCORE = 0LT_MIN_= 20
+DEFAURCH_K _VECTOR_SEALTng
+DEFAUsiery procesants for quonst)
+
+# Ce__namer(__ = get_logggerr
+logggeure lo
+# Configon
+ AsyncSessiimportyncio t.as.exm sqlalchemy
+froport selecthemy imm sqlalc_db
+fro getimportdb.database  app.romice
+fservrt usage_ impousagep.services. apory
+fromion_reposituery_sessns import query_sessioositories.qrom app.repy
+ftor_reposia_fileport medidia_files imies.merepositor
+from app.ryto_repositext_notetes import ext_no.ttories.reposi
+from appitoryt_reposocation_visirt lts impoisilocation_vries.positoapp.reUser
+from t User as DBorse imps.databaodelom app.m
+)
+fre, FileTypeiaReferencMed
+    sponse,Re, QueryQueryRequestult, User, SearchResector, VntTypente   Coimport (
+ emas ls.schodeom app.m
+fring_serviceice, embeddervmbeddingSg import Eddinmbeapp.aws.eogger
+from ort get_lg imp.core.loggin appngs
+fromttit seimporore.config p.caprom Model
+
+frt Baseantic impoyd
+from pn, statusTPExceptioi import HTom fastapUID
+
+frort Uom uuid imp, Set
+fr Unione,Tuplal, Any, , Option Dict, Listyping import
+from trt Decimalmpodecimal iom edelta
+fre, timort datetimatetime imp domh
+fr matre
+importimport 
+"""
+ scoring.elevanceon and risolatier user ith propg
+wsult rankinreing, and data filtertured , strucrchrity sealaector siming v
+performies,e queriaggural lanatusing nrocesality for pon functirovidess module pPI.
+
+ThionoTrail Ane for Chr engiessingprocery ""
+Qu"
