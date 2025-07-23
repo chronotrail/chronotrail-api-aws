@@ -120,7 +120,7 @@
     - **Features:** Authentication required, subscription tier aware, comprehensive error handling, extensible middleware design
 
 - [ ] 9. Implement API endpoints for data submission
-  - [ ] 9.1 Create location visits endpoints
+  - [x] 9.1 Create location visits endpoints
     - Implement POST /api/v1/locations for creating location visits
     - Implement GET /api/v1/locations with date filtering
     - Implement PUT /api/v1/locations/{visit_id} for updates
