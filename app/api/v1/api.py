@@ -3,7 +3,7 @@ Main API router for v1 endpoints
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, usage, locations, notes
+from app.api.v1.endpoints import auth, usage, locations, notes, photos
 
 api_router = APIRouter()
 
@@ -19,9 +19,11 @@ api_router.include_router(locations.router, prefix="/locations", tags=["location
 # Include text notes endpoints
 api_router.include_router(notes.router, prefix="/notes", tags=["notes"])
 
+# Include photo upload endpoints
+api_router.include_router(photos.router, prefix="/photos", tags=["photos"])
+
 # Placeholder for future endpoint routers
-# from app.api.v1.endpoints import photos, voice, query, media
-# api_router.include_router(photos.router, prefix="/photos", tags=["photos"])
+# from app.api.v1.endpoints import voice, query, media
 # api_router.include_router(voice.router, prefix="/voice", tags=["voice"])
 # api_router.include_router(query.router, prefix="/query", tags=["query"])
 # api_router.include_router(media.router, prefix="/media", tags=["media"])

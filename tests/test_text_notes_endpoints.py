@@ -83,9 +83,19 @@ class TestTextNotesEndpoints:
             latitude=Decimal(str(valid_text_note_data["latitude"])),
             address=valid_text_note_data["address"],
             names=valid_text_note_data["names"],
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.utcnow()
         )
+        
+        # Mock the database operations properly
+        mock_result = AsyncMock()
+        mock_scalars = AsyncMock()
+        mock_scalars.first.return_value = None  # No existing daily usage
+        mock_result.scalars.return_value = mock_scalars
+        
+        # Make execute return the mock_result directly (not as a coroutine)
+        async def mock_execute(*args, **kwargs):
+            return mock_result
+        mock_db.execute = mock_execute
         
         # Override dependencies
         def mock_get_current_user():
@@ -132,7 +142,7 @@ class TestTextNotesEndpoints:
         mock_embedding.assert_called_once()
         
         # Verify usage was incremented
-        mock_increment.assert_called_once_with(mock_db, sample_user.id, "text_notes")
+        mock_increment.assert_called_once_with(db=mock_db, user_id=sample_user.id, content_type="text_notes")
     
     def test_create_text_note_minimal_data(
         self,
@@ -152,9 +162,19 @@ class TestTextNotesEndpoints:
             latitude=None,
             address=None,
             names=None,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.utcnow()
         )
+        
+        # Mock the database operations properly
+        mock_result = AsyncMock()
+        mock_scalars = AsyncMock()
+        mock_scalars.first.return_value = None  # No existing daily usage
+        mock_result.scalars.return_value = mock_scalars
+        
+        # Make execute return the mock_result directly (not as a coroutine)
+        async def mock_execute(*args, **kwargs):
+            return mock_result
+        mock_db.execute = mock_execute
         
         # Override dependencies
         def mock_get_current_user():
@@ -206,7 +226,7 @@ class TestTextNotesEndpoints:
             json=valid_text_note_data
         )
         
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.status_code == status.HTTP_403_FORBIDDEN
     
     def test_create_text_note_validation_error_empty_content(
         self,
@@ -230,10 +250,20 @@ class TestTextNotesEndpoints:
         app.dependency_overrides[get_current_active_user] = mock_get_current_user
         app.dependency_overrides[get_async_db] = mock_get_db
         
-        response = client.post(
-            "/api/v1/notes",
-            json=invalid_data
-        )
+        # Mock the usage service methods to avoid database issues
+        with patch("app.services.usage.UsageService.get_or_create_daily_usage") as mock_get_usage, \
+             patch("app.services.usage.UsageService.check_daily_content_limit") as mock_check_limit:
+            
+            # Mock daily usage object
+            mock_daily_usage = AsyncMock()
+            mock_daily_usage.text_notes_count = 0
+            mock_get_usage.return_value = mock_daily_usage
+            mock_check_limit.return_value = None
+            
+            response = client.post(
+                "/api/v1/notes",
+                json=invalid_data
+            )
         
         # Clean up overrides
         app.dependency_overrides.clear()

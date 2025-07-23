@@ -1,15 +1,17 @@
 """
 Usage validation middleware for enforcing subscription tier limits.
 """
+import os
 from typing import Callable, Dict, Any
-from fastapi import Request, HTTPException, status, Depends
+from fastapi import Request, HTTPException, status, Depends, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_async_db
 from app.services.auth import AuthService, get_current_active_user
 from app.services.usage import UsageService
-from app.models.schemas import User
+from app.models.schemas import User, FileType
+from app.core.config import settings
 
 security = HTTPBearer()
 
@@ -210,3 +212,54 @@ async def validate_query_date_usage(
 ) -> User:
     """Dependency for validating query date range limits."""
     return await UsageLimitMiddleware.validate_query_date_range(request, current_user)
+
+
+async def validate_file_size(
+    file: UploadFile,
+    subscription_tier: str,
+    file_type: FileType
+) -> None:
+    """
+    Validate file size based on subscription tier and file type.
+    
+    Args:
+        file: Uploaded file
+        subscription_tier: User's subscription tier
+        file_type: Type of file being uploaded
+        
+    Raises:
+        HTTPException: If file size exceeds limits
+    """
+    # Get tier limits
+    tier_limits = UsageService.get_tier_limits(subscription_tier)
+    
+    # Get file size by reading the file content
+    content = await file.read()
+    file_size = len(content)
+    await file.seek(0)  # Reset file pointer
+    
+    # Determine max file size based on file type and tier
+    if file_type == FileType.PHOTO:
+        max_size_mb = tier_limits.get("max_file_size_mb", 5)  # Default to 5MB
+    elif file_type == FileType.VOICE:
+        max_size_mb = tier_limits.get("max_file_size_mb", 5)  # Default to 5MB
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type: {file_type}"
+        )
+    
+    max_size_bytes = max_size_mb * 1024 * 1024  # Convert MB to bytes
+    
+    if file_size > max_size_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail={
+                "error": "File too large",
+                "message": f"File size ({file_size / 1024 / 1024:.1f}MB) exceeds the limit for {subscription_tier} tier ({max_size_mb}MB). "
+                          f"Upgrade your subscription for higher limits.",
+                "file_size_mb": round(file_size / 1024 / 1024, 1),
+                "max_size_mb": max_size_mb,
+                "subscription_tier": subscription_tier
+            }
+        )

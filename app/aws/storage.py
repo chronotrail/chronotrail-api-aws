@@ -130,9 +130,9 @@ class FileStorageService:
                 'timestamp': str(timestamp or datetime.utcnow()),
             })
             
-            # Get file size
-            await file.seek(0, os.SEEK_END)
-            file_size = file.tell()
+            # Get file size by reading the file content
+            content = await file.read()
+            file_size = len(content)
             await file.seek(0)
             
             # Upload file
