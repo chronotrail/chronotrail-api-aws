@@ -4,7 +4,7 @@ Tests for the LLM service.
 import json
 import pytest
 from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock, AsyncMock
 from uuid import uuid4
 
 from app.aws.llm import LLMService, DEFAULT_MODEL_ID, FALLBACK_MODEL_ID
@@ -217,31 +217,23 @@ class TestLLMService:
         mock_client = Mock()
         mock_get_client.return_value = mock_client
         
-        # First call raises exception
-        mock_client.invoke_model.side_effect = [
-            Exception("Test error"),
-            {
-                'body': MagicMock()
-            }
-        ]
-        
-        # Second call succeeds
+        # First call raises exception, second call (fallback model) succeeds
         mock_response = {
             'body': MagicMock()
         }
         mock_response['body'].read.return_value = json.dumps({
-            'completion': 'This is a fallback response.'
+            'completion': 'This is a fallback model response.'
         })
         mock_client.invoke_model.side_effect = [Exception("Test error"), mock_response]
         
         # Test generating a response
         query = "What did I do today?"
         
-        # This should use the fallback response generator
+        # This should use the fallback model
         response = llm_service.generate_response(query, mock_context_items)
         
-        # Check that the fallback response was generated
-        assert "I found" in response
+        # Check that the fallback model response was used
+        assert response == 'This is a fallback model response.'
     
     def test_generate_fallback_response(self, llm_service, mock_context_items):
         """Test generating a fallback response."""
@@ -276,20 +268,29 @@ class TestLLMServiceAsync:
     async def test_generate_response_async(self, mock_get_client, llm_service, mock_context_items):
         """Test generating a response asynchronously."""
         # Mock the async Bedrock client
-        mock_client_cm = MagicMock()
-        mock_client = MagicMock()
-        mock_client_cm.__aenter__.return_value = mock_client
-        mock_get_client.return_value = mock_client_cm
+        mock_client = AsyncMock()
         
-        # Mock the response
-        mock_response = {
-            'body': MagicMock()
-        }
-        mock_response['body'].read = MagicMock()
-        mock_response['body'].read.return_value = json.dumps({
+        # Mock the response with async read method
+        mock_body = AsyncMock()
+        mock_body.read.return_value = json.dumps({
             'completion': 'This is an async test response.'
         })
+        
+        mock_response = {
+            'body': mock_body
+        }
         mock_client.invoke_model.return_value = mock_response
+        
+        # Mock the context manager factory to return an async context manager
+        async def mock_context_manager():
+            return mock_client
+        
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__.return_value = mock_client
+        mock_cm.__aexit__.return_value = None
+        
+        # Mock get_async_bedrock_client to return a function that returns the context manager
+        mock_get_client.return_value = lambda: mock_cm
         
         # Test generating a response asynchronously
         query = "What did I do today?"

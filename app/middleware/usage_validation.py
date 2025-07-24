@@ -2,7 +2,8 @@
 Usage validation middleware for enforcing subscription tier limits.
 """
 import os
-from typing import Callable, Dict, Any
+from datetime import datetime
+from typing import Callable, Dict, Any, Optional
 from fastapi import Request, HTTPException, status, Depends, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -263,8 +264,7 @@ async def validate_file_size(
                 "subscription_tier": subscription_tier
             }
         )
-async
- def validate_date_range(
+async def validate_date_range(
     start_date: Optional[datetime] = None,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_async_db)

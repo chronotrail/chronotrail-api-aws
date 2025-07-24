@@ -44,8 +44,7 @@ LOCATION_SEARCH_RADIUS_KM = 5.0
 TIME_WINDOW_DAYS = 30
 RECENCY_BOOST_FACTOR = 0.2  # Boost factor for recent content
 RELEVANCE_THRESHOLD = 0.65  # Minimum relevance score for results
-class Qu
-eryFilter(BaseModel):
+class QueryFilter(BaseModel):
     """Model for query filtering parameters."""
     content_types: Optional[List[ContentType]] = None
     date_range: Optional[Dict[str, datetime]] = None
@@ -71,8 +70,9 @@ class QueryIntent(BaseModel):
     content_terms: List[str]
     has_location_filter: bool = False
     has_time_filter: bool = False
-    has_media_filter: bool = Falseclas
-s QueryProcessingService:
+    has_media_filter: bool = False
+
+class QueryProcessingService:
     """
     Service for processing natural language queries with vector similarity search,
     structured data filtering, and result ranking.
@@ -150,8 +150,9 @@ s QueryProcessingService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to process query"
-            )    def
- _parse_query_intent(self, query: str) -> QueryIntent:
+            )    
+
+    def _parse_query_intent(self, query: str) -> QueryIntent:
         """
         Parse natural language query to determine intent and extract key terms.
         
@@ -243,8 +244,9 @@ s QueryProcessingService:
             has_location_filter=has_location,
             has_time_filter=has_time,
             has_media_filter=has_media
-        )    def 
-_parse_time_range(self, time_terms: List[str]) -> Optional[Dict[str, datetime]]:
+        )    
+
+    def _parse_time_range(self, time_terms: List[str]) -> Optional[Dict[str, datetime]]:
         """
         Parse time terms into a date range.
         
@@ -298,7 +300,7 @@ _parse_time_range(self, time_terms: List[str]) -> Optional[Dict[str, datetime]]:
             }
         
         return None  
-  async def _create_query_filter(
+    async def _create_query_filter(
         self,
         user: User,
         intent: QueryIntent,
@@ -360,8 +362,9 @@ _parse_time_range(self, time_terms: List[str]) -> Optional[Dict[str, datetime]]:
                 else:
                     query_filter.date_range = time_range
         
-        return query_filter    
-async def _perform_search(
+        return query_filter
+
+    async def _perform_search(
         self,
         user_id: UUID,
         query: str,
@@ -497,7 +500,7 @@ async def _perform_search(
             return structured_score
         else:
             return 0.0   
- async def _search_structured_data(
+    async def _search_structured_data(
         self,
         user_id: UUID,
         intent: QueryIntent,
@@ -783,7 +786,7 @@ async def _perform_search(
                 logger.warning(f"Media file search failed: {str(e)}")
         
         return results  
-  def _rank_and_score_results(
+    def _rank_and_score_results(
         self,
         search_result: SearchResult,
         intent: QueryIntent,
@@ -953,8 +956,9 @@ async def _perform_search(
         )
         
         # Limit results
-        return filtered_results[:DEFAULT_MAX_RESULTS]    asy
-nc def _generate_response(
+        return filtered_results[:DEFAULT_MAX_RESULTS]    
+    
+    async def _generate_response(
         self,
         user: User,
         query_request: QueryRequest,
