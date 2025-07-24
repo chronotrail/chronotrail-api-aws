@@ -198,7 +198,7 @@
     - Test authentication and authorization flows
     - _Requirements: All requirements_
   
-  - [ ] 13.3 Write end-to-end tests for user workflows
+  - [x] 13.3 Write end-to-end tests for user workflows
     - Test complete user journeys from data submission to querying
     - Test conversational media retrieval flows
     - Test location tagging and search functionality
