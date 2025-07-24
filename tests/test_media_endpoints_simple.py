@@ -122,7 +122,7 @@ class TestMediaEndpointsCore:
                 
                 # Verify response
                 assert response.status_code == status.HTTP_404_NOT_FOUND
-                assert response.json()["detail"] == "Media file not found"
+                assert response.json()["message"] == "Media file not found"
         finally:
             # Clean up dependency overrides
             app.dependency_overrides.clear()
@@ -166,7 +166,7 @@ class TestMediaEndpointsCore:
                 
                 # Verify response
                 assert response.status_code == status.HTTP_403_FORBIDDEN
-                assert response.json()["detail"] == "Access denied to this media file"
+                assert response.json()["message"] == "Access denied to this media file"
         finally:
             # Clean up dependency overrides
             app.dependency_overrides.clear()
@@ -271,12 +271,12 @@ class TestMediaEndpointsCore:
             # Test expiration too short
             response = client.get(f"/api/v1/media/{test_media_file.id}/download-url?expiration=30")
             assert response.status_code == status.HTTP_400_BAD_REQUEST
-            assert "Expiration must be between 60 seconds and 86400 seconds" in response.json()["detail"]
+            assert "Expiration must be between 60 seconds and 86400 seconds" in response.json()["message"]
             
             # Test expiration too long
             response = client.get(f"/api/v1/media/{test_media_file.id}/download-url?expiration=90000")
             assert response.status_code == status.HTTP_400_BAD_REQUEST
-            assert "Expiration must be between 60 seconds and 86400 seconds" in response.json()["detail"]
+            assert "Expiration must be between 60 seconds and 86400 seconds" in response.json()["message"]
         finally:
             # Clean up dependency overrides
             app.dependency_overrides.clear()

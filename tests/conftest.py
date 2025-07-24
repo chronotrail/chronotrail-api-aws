@@ -18,6 +18,14 @@ from app.core.config import settings
 from app.db.database import get_db, Base
 from app.main import app as main_app
 from app.models.schemas import User, SubscriptionTier
+from app.models.database import (
+    User as UserModel,
+    LocationVisit as LocationVisitModel,
+    TextNote as TextNoteModel,
+    MediaFile as MediaFileModel,
+    QuerySession as QuerySessionModel,
+    DailyUsage as DailyUsageModel
+)
 
 
 # Create a test database URL
