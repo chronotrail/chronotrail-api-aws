@@ -16,7 +16,8 @@ from fastapi import UploadFile, HTTPException, status
 from pydantic import BaseModel
 
 from app.core.config import settings
-from app.core.logging import get_logger
+from app.core.logging import get_logger, with_logging, LoggingContext
+from app.core.exceptions import ExternalServiceError, FileUploadError
 from app.aws.clients import get_s3_client, get_async_s3_client
 from app.aws.utils import (
     generate_s3_key,
@@ -53,6 +54,7 @@ class FileStorageService:
         self.bucket_name = bucket_name or settings.S3_BUCKET_NAME
         logger.info(f"Initialized FileStorageService with bucket: {self.bucket_name}")
     
+    @with_logging(log_execution_time=True, level="info")
     async def upload_file(
         self,
         file: UploadFile,
@@ -77,98 +79,107 @@ class FileStorageService:
             Dict with file information including S3 key and URL
             
         Raises:
-            HTTPException: If file validation fails
-            S3Error: If upload fails
+            FileUploadError: If file validation fails
+            ExternalServiceError: If S3 upload fails
         """
-        # Convert UUID to string if needed
-        if isinstance(user_id, UUID):
-            user_id = str(user_id)
-        
-        # Determine allowed types based on file_type
-        if file_type.lower() == 'photo':
-            allowed_types = ALLOWED_IMAGE_TYPES
-            max_size_mb = settings.MAX_FILE_SIZE_FREE  # Default to free tier
-        elif file_type.lower() == 'voice':
-            allowed_types = ALLOWED_AUDIO_TYPES
-            max_size_mb = settings.MAX_FILE_SIZE_FREE  # Default to free tier
-        else:
-            raise ValueError(f"Unsupported file type: {file_type}")
-        
-        # Validate file
-        is_valid, error_message = await validate_file(
-            file,
-            allowed_types,
-            max_size_mb,
-            'free'  # Default to free tier
-        )
-        
-        if not is_valid:
-            logger.warning(f"File validation failed: {error_message}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=error_message
-            )
-        
-        try:
-            # Generate S3 key if not provided
-            if not custom_key:
-                s3_key = generate_s3_key(
-                    user_id=user_id,
-                    file_type=file_type,
-                    original_filename=file.filename,
-                    timestamp=timestamp
-                )
+        with LoggingContext(logger, user_id=str(user_id), file_type=file_type, operation="upload_file") as ctx_logger:
+            # Convert UUID to string if needed
+            if isinstance(user_id, UUID):
+                user_id = str(user_id)
+            
+            # Determine allowed types based on file_type
+            if file_type.lower() == 'photo':
+                allowed_types = ALLOWED_IMAGE_TYPES
+                max_size_mb = settings.MAX_FILE_SIZE_FREE  # Default to free tier
+            elif file_type.lower() == 'voice':
+                allowed_types = ALLOWED_AUDIO_TYPES
+                max_size_mb = settings.MAX_FILE_SIZE_FREE  # Default to free tier
             else:
-                s3_key = custom_key
+                raise FileUploadError(
+                    message=f"Unsupported file type: {file_type}",
+                    details={"supported_types": ["photo", "voice"]}
+                )
             
-            # Prepare metadata
-            file_metadata = metadata or {}
-            file_metadata.update({
-                'user_id': str(user_id),
-                'file_type': file_type,
-                'original_filename': file.filename or 'unknown',
-                'timestamp': str(timestamp or datetime.utcnow()),
-            })
-            
-            # Get file size by reading the file content
-            content = await file.read()
-            file_size = len(content)
-            await file.seek(0)
-            
-            # Upload file
-            s3_url = await upload_file_to_s3(
-                file=file,
-                bucket_name=self.bucket_name,
-                object_key=s3_key,
-                content_type=file.content_type,
-                metadata=file_metadata
+            # Validate file
+            is_valid, error_message = await validate_file(
+                file,
+                allowed_types,
+                max_size_mb,
+                'free'  # Default to free tier
             )
             
-            # Return file information
-            return {
-                'file_id': str(uuid.uuid4()),  # Generate a unique ID for the file
-                'bucket_name': self.bucket_name,
-                's3_key': s3_key,
-                's3_url': s3_url,
-                'file_type': file_type,
-                'original_filename': file.filename,
-                'content_type': file.content_type,
-                'file_size': file_size,
-                'timestamp': timestamp or datetime.utcnow(),
-            }
+            if not is_valid:
+                ctx_logger.warning("File validation failed", error=error_message, filename=file.filename)
+                raise FileUploadError(
+                    message="File validation failed",
+                    details={"validation_error": error_message, "filename": file.filename}
+                )
             
-        except S3Error as e:
-            logger.error(f"S3 error during file upload: {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to upload file: {str(e)}"
-            )
-        except Exception as e:
-            logger.error(f"Unexpected error during file upload: {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected error occurred during file upload"
-            )
+            try:
+                # Generate S3 key if not provided
+                if not custom_key:
+                    s3_key = generate_s3_key(
+                        user_id=user_id,
+                        file_type=file_type,
+                        original_filename=file.filename,
+                        timestamp=timestamp
+                    )
+                else:
+                    s3_key = custom_key
+                
+                # Prepare metadata
+                file_metadata = metadata or {}
+                file_metadata.update({
+                    'user_id': str(user_id),
+                    'file_type': file_type,
+                    'original_filename': file.filename or 'unknown',
+                    'timestamp': str(timestamp or datetime.utcnow()),
+                })
+                
+                # Get file size by reading the file content
+                content = await file.read()
+                file_size = len(content)
+                await file.seek(0)
+                
+                ctx_logger.info("Starting S3 upload", s3_key=s3_key, file_size=file_size)
+                
+                # Upload file
+                s3_url = await upload_file_to_s3(
+                    file=file,
+                    bucket_name=self.bucket_name,
+                    object_key=s3_key,
+                    content_type=file.content_type,
+                    metadata=file_metadata
+                )
+                
+                # Return file information
+                result = {
+                    'file_id': str(uuid.uuid4()),  # Generate a unique ID for the file
+                    'bucket_name': self.bucket_name,
+                    's3_key': s3_key,
+                    's3_url': s3_url,
+                    'file_type': file_type,
+                    'original_filename': file.filename,
+                    'content_type': file.content_type,
+                    'file_size': file_size,
+                    'timestamp': timestamp or datetime.utcnow(),
+                }
+                
+                ctx_logger.info("File upload completed successfully", s3_key=s3_key, file_size=file_size)
+                return result
+                
+            except S3Error as e:
+                ctx_logger.error("S3 error during file upload", error=str(e), s3_key=s3_key)
+                raise ExternalServiceError(
+                    message="Failed to upload file to S3",
+                    details={"s3_error": str(e), "s3_key": s3_key, "bucket": self.bucket_name}
+                )
+            except Exception as e:
+                ctx_logger.error("Unexpected error during file upload", error=str(e), s3_key=s3_key)
+                raise ExternalServiceError(
+                    message="An unexpected error occurred during file upload",
+                    details={"error": str(e), "s3_key": s3_key}
+                )
     
     async def download_file(
         self,

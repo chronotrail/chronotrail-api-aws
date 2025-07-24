@@ -349,7 +349,7 @@ class ErrorResponse(BaseModel):
     error: str = Field(..., max_length=100)
     message: str = Field(..., max_length=500)
     details: Optional[Dict[str, Any]] = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + 'Z')
 
     model_config = ConfigDict(from_attributes=True)
 
