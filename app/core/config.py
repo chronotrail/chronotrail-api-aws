@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     AWS_REGION: str = os.getenv("AWS_REGION", "us-east-1")
     AWS_ACCESS_KEY_ID: Optional[str] = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY: Optional[str] = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_ENDPOINT_URL: Optional[str] = os.getenv("AWS_ENDPOINT_URL")  # For LocalStack
     
     # S3 Configuration
     S3_BUCKET_NAME: str = os.getenv("S3_BUCKET_NAME", "chronotrail-media")

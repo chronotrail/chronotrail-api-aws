@@ -129,6 +129,12 @@ class AWSClientManager:
                 'aws_access_key_id': settings.AWS_ACCESS_KEY_ID,
                 'aws_secret_access_key': settings.AWS_SECRET_ACCESS_KEY,
             })
+        
+        # Add endpoint URL for LocalStack support
+        if settings.AWS_ENDPOINT_URL:
+            self.aws_config.update({
+                'endpoint_url': settings.AWS_ENDPOINT_URL,
+            })
     
     @property
     def session(self) -> boto3.Session:

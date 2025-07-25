@@ -10,15 +10,18 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://chronotrail:password@db:5432/chronotrail
-      - OPENSEARCH_URL=https://opensearch:9200
+      - OPENSEARCH_URL=http://opensearch:9200
       - AWS_DEFAULT_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - S3_BUCKET_NAME=chronotrail-media
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key}
       - ENVIRONMENT=development
     depends_on:
       - db
       - opensearch
+      - localstack
     volumes:
       - ./logs:/app/logs
     networks:
@@ -72,6 +75,25 @@ services:
       - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
     depends_on:
       - opensearch
+    networks:
+      - chronotrail-network
+
+  localstack:
+    image: localstack/localstack:3.0
+    ports:
+      - "4566:4566"  # LocalStack Gateway
+      - "4510-4559:4510-4559"  # External services port range
+    environment:
+      - DEBUG=1
+      - SERVICES=s3,bedrock,textract,transcribe,rekognition,cognito-idp
+      - DATA_DIR=/tmp/localstack/data
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./localstack-data:/tmp/localstack"
     networks:
       - chronotrail-network
 
