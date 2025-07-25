@@ -1,16 +1,16 @@
 # Data models package
 from .database import (
-    User,
     DailyUsage,
     LocationVisit,
-    TextNote,
     MediaFile,
     QuerySession,
+    TextNote,
+    User,
 )
 
 __all__ = [
     "User",
-    "DailyUsage", 
+    "DailyUsage",
     "LocationVisit",
     "TextNote",
     "MediaFile",

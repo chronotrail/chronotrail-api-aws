@@ -5,17 +5,16 @@ AWS CDK app for ChronoTrail API infrastructure
 
 import aws_cdk as cdk
 from constructs import Construct
-
 from stacks.chronotrail_stack import ChronoTrailStack
 
 
 class ChronoTrailApp(cdk.App):
     def __init__(self):
         super().__init__()
-        
+
         # Get environment configuration
         env_name = self.node.try_get_context("environment") or "dev"
-        
+
         # Environment-specific configuration
         env_config = {
             "dev": {
@@ -59,22 +58,19 @@ class ChronoTrailApp(cdk.App):
                 "instance_class": "c5.xlarge",
                 "opensearch_instance_type": "r6g.large.search",
                 "opensearch_instance_count": 3,
-            }
+            },
         }
-        
+
         config = env_config.get(env_name, env_config["dev"])
-        
+
         # Create the main stack
         ChronoTrailStack(
             self,
             f"ChronoTrail-{env_name.title()}",
-            env=cdk.Environment(
-                account=config["account"],
-                region=config["region"]
-            ),
+            env=cdk.Environment(account=config["account"], region=config["region"]),
             environment=env_name,
             config=config,
-            description=f"ChronoTrail API infrastructure for {env_name} environment"
+            description=f"ChronoTrail API infrastructure for {env_name} environment",
         )
 
 

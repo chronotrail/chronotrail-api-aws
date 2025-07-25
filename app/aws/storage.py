@@ -4,33 +4,34 @@ S3 file storage service for ChronoTrail API.
 This module provides functionality for uploading, downloading, and managing files in S3,
 including file type validation, size limits, and secure URL generation.
 """
-import os
+
 import io
-import uuid
 import mimetypes
+import os
+import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, BinaryIO, Union, Any
+from typing import Any, BinaryIO, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
-from fastapi import UploadFile, HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 from pydantic import BaseModel
 
-from app.core.config import settings
-from app.core.logging import get_logger, with_logging, LoggingContext
-from app.core.exceptions import ExternalServiceError, FileUploadError
-from app.aws.clients import get_s3_client, get_async_s3_client
+from app.aws.clients import get_async_s3_client, get_s3_client
+from app.aws.exceptions import FileProcessingError, S3Error
 from app.aws.utils import (
-    generate_s3_key,
-    generate_presigned_url,
-    check_file_exists,
-    upload_file_to_s3,
-    download_file_from_s3,
-    delete_file_from_s3,
-    validate_file,
-    ALLOWED_IMAGE_TYPES,
     ALLOWED_AUDIO_TYPES,
+    ALLOWED_IMAGE_TYPES,
+    check_file_exists,
+    delete_file_from_s3,
+    download_file_from_s3,
+    generate_presigned_url,
+    generate_s3_key,
+    upload_file_to_s3,
+    validate_file,
 )
-from app.aws.exceptions import S3Error, FileProcessingError
+from app.core.config import settings
+from app.core.exceptions import ExternalServiceError, FileUploadError
+from app.core.logging import LoggingContext, get_logger, with_logging
 
 # Configure logger
 logger = get_logger(__name__)
@@ -39,21 +40,21 @@ logger = get_logger(__name__)
 class FileStorageService:
     """
     Service for managing file storage in S3.
-    
+
     This service provides methods for uploading, downloading, and managing files in S3,
     including file type validation, size limits, and secure URL generation.
     """
-    
+
     def __init__(self, bucket_name: Optional[str] = None):
         """
         Initialize the file storage service.
-        
+
         Args:
             bucket_name: Optional S3 bucket name (defaults to settings.S3_BUCKET_NAME)
         """
         self.bucket_name = bucket_name or settings.S3_BUCKET_NAME
         logger.info(f"Initialized FileStorageService with bucket: {self.bucket_name}")
-    
+
     @with_logging(log_execution_time=True, level="info")
     async def upload_file(
         self,
@@ -66,7 +67,7 @@ class FileStorageService:
     ) -> Dict[str, Any]:
         """
         Upload a file to S3 with validation.
-        
+
         Args:
             file: FastAPI UploadFile object
             user_id: User ID for isolation
@@ -74,47 +75,53 @@ class FileStorageService:
             timestamp: Optional timestamp for the file
             metadata: Optional metadata for the S3 object
             custom_key: Optional custom S3 key
-            
+
         Returns:
             Dict with file information including S3 key and URL
-            
+
         Raises:
             FileUploadError: If file validation fails
             ExternalServiceError: If S3 upload fails
         """
-        with LoggingContext(logger, user_id=str(user_id), file_type=file_type, operation="upload_file") as ctx_logger:
+        with LoggingContext(
+            logger, user_id=str(user_id), file_type=file_type, operation="upload_file"
+        ) as ctx_logger:
             # Convert UUID to string if needed
             if isinstance(user_id, UUID):
                 user_id = str(user_id)
-            
+
             # Determine allowed types based on file_type
-            if file_type.lower() == 'photo':
+            if file_type.lower() == "photo":
                 allowed_types = ALLOWED_IMAGE_TYPES
                 max_size_mb = settings.MAX_FILE_SIZE_FREE  # Default to free tier
-            elif file_type.lower() == 'voice':
+            elif file_type.lower() == "voice":
                 allowed_types = ALLOWED_AUDIO_TYPES
                 max_size_mb = settings.MAX_FILE_SIZE_FREE  # Default to free tier
             else:
                 raise FileUploadError(
                     message=f"Unsupported file type: {file_type}",
-                    details={"supported_types": ["photo", "voice"]}
+                    details={"supported_types": ["photo", "voice"]},
                 )
-            
+
             # Validate file
             is_valid, error_message = await validate_file(
-                file,
-                allowed_types,
-                max_size_mb,
-                'free'  # Default to free tier
+                file, allowed_types, max_size_mb, "free"  # Default to free tier
             )
-            
+
             if not is_valid:
-                ctx_logger.warning("File validation failed", error=error_message, filename=file.filename)
+                ctx_logger.warning(
+                    "File validation failed",
+                    error=error_message,
+                    filename=file.filename,
+                )
                 raise FileUploadError(
                     message="File validation failed",
-                    details={"validation_error": error_message, "filename": file.filename}
+                    details={
+                        "validation_error": error_message,
+                        "filename": file.filename,
+                    },
                 )
-            
+
             try:
                 # Generate S3 key if not provided
                 if not custom_key:
@@ -122,78 +129,94 @@ class FileStorageService:
                         user_id=user_id,
                         file_type=file_type,
                         original_filename=file.filename,
-                        timestamp=timestamp
+                        timestamp=timestamp,
                     )
                 else:
                     s3_key = custom_key
-                
+
                 # Prepare metadata
                 file_metadata = metadata or {}
-                file_metadata.update({
-                    'user_id': str(user_id),
-                    'file_type': file_type,
-                    'original_filename': file.filename or 'unknown',
-                    'timestamp': str(timestamp or datetime.utcnow()),
-                })
-                
+                file_metadata.update(
+                    {
+                        "user_id": str(user_id),
+                        "file_type": file_type,
+                        "original_filename": file.filename or "unknown",
+                        "timestamp": str(timestamp or datetime.utcnow()),
+                    }
+                )
+
                 # Get file size by reading the file content
                 content = await file.read()
                 file_size = len(content)
                 await file.seek(0)
-                
-                ctx_logger.info("Starting S3 upload", s3_key=s3_key, file_size=file_size)
-                
+
+                ctx_logger.info(
+                    "Starting S3 upload", s3_key=s3_key, file_size=file_size
+                )
+
                 # Upload file
                 s3_url = await upload_file_to_s3(
                     file=file,
                     bucket_name=self.bucket_name,
                     object_key=s3_key,
                     content_type=file.content_type,
-                    metadata=file_metadata
+                    metadata=file_metadata,
                 )
-                
+
                 # Return file information
                 result = {
-                    'file_id': str(uuid.uuid4()),  # Generate a unique ID for the file
-                    'bucket_name': self.bucket_name,
-                    's3_key': s3_key,
-                    's3_url': s3_url,
-                    'file_type': file_type,
-                    'original_filename': file.filename,
-                    'content_type': file.content_type,
-                    'file_size': file_size,
-                    'timestamp': timestamp or datetime.utcnow(),
+                    "file_id": str(uuid.uuid4()),  # Generate a unique ID for the file
+                    "bucket_name": self.bucket_name,
+                    "s3_key": s3_key,
+                    "s3_url": s3_url,
+                    "file_type": file_type,
+                    "original_filename": file.filename,
+                    "content_type": file.content_type,
+                    "file_size": file_size,
+                    "timestamp": timestamp or datetime.utcnow(),
                 }
-                
-                ctx_logger.info("File upload completed successfully", s3_key=s3_key, file_size=file_size)
+
+                ctx_logger.info(
+                    "File upload completed successfully",
+                    s3_key=s3_key,
+                    file_size=file_size,
+                )
                 return result
-                
+
             except S3Error as e:
-                ctx_logger.error("S3 error during file upload", error=str(e), s3_key=s3_key)
+                ctx_logger.error(
+                    "S3 error during file upload", error=str(e), s3_key=s3_key
+                )
                 raise ExternalServiceError(
                     message="Failed to upload file to S3",
-                    details={"s3_error": str(e), "s3_key": s3_key, "bucket": self.bucket_name}
+                    details={
+                        "s3_error": str(e),
+                        "s3_key": s3_key,
+                        "bucket": self.bucket_name,
+                    },
                 )
             except Exception as e:
-                ctx_logger.error("Unexpected error during file upload", error=str(e), s3_key=s3_key)
+                ctx_logger.error(
+                    "Unexpected error during file upload", error=str(e), s3_key=s3_key
+                )
                 raise ExternalServiceError(
                     message="An unexpected error occurred during file upload",
-                    details={"error": str(e), "s3_key": s3_key}
+                    details={"error": str(e), "s3_key": s3_key},
                 )
-    
+
     async def download_file(
         self,
         s3_key: str,
     ) -> bytes:
         """
         Download a file from S3.
-        
+
         Args:
             s3_key: S3 object key
-            
+
         Returns:
             bytes: File content
-            
+
         Raises:
             S3Error: If download fails
             HTTPException: If file doesn't exist
@@ -204,23 +227,21 @@ class FileStorageService:
             if not exists:
                 logger.warning(f"File not found: {s3_key}")
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="File not found"
+                    status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
                 )
-            
+
             # Download file
             file_content = await download_file_from_s3(
-                bucket_name=self.bucket_name,
-                object_key=s3_key
+                bucket_name=self.bucket_name, object_key=s3_key
             )
-            
+
             return file_content
-            
+
         except S3Error as e:
             logger.error(f"S3 error during file download: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to download file: {str(e)}"
+                detail=f"Failed to download file: {str(e)}",
             )
         except HTTPException:
             raise
@@ -228,47 +249,46 @@ class FileStorageService:
             logger.error(f"Unexpected error during file download: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected error occurred during file download"
+                detail="An unexpected error occurred during file download",
             )
-    
+
     async def delete_file(
         self,
         s3_key: str,
     ) -> bool:
         """
         Delete a file from S3.
-        
+
         Args:
             s3_key: S3 object key
-            
+
         Returns:
             bool: True if file was deleted successfully
-            
+
         Raises:
             S3Error: If deletion fails
         """
         try:
             # Delete file
             result = await delete_file_from_s3(
-                bucket_name=self.bucket_name,
-                object_key=s3_key
+                bucket_name=self.bucket_name, object_key=s3_key
             )
-            
+
             return result
-            
+
         except S3Error as e:
             logger.error(f"S3 error during file deletion: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to delete file: {str(e)}"
+                detail=f"Failed to delete file: {str(e)}",
             )
         except Exception as e:
             logger.error(f"Unexpected error during file deletion: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected error occurred during file deletion"
+                detail="An unexpected error occurred during file deletion",
             )
-    
+
     def generate_download_url(
         self,
         s3_key: str,
@@ -277,15 +297,15 @@ class FileStorageService:
     ) -> str:
         """
         Generate a secure pre-signed URL for file download.
-        
+
         Args:
             s3_key: S3 object key
             expiration: URL expiration time in seconds
             file_name: Optional file name for Content-Disposition
-            
+
         Returns:
             str: Pre-signed URL
-            
+
         Raises:
             S3Error: If URL generation fails
             HTTPException: If file doesn't exist
@@ -296,36 +316,37 @@ class FileStorageService:
             if not exists:
                 logger.warning(f"File not found: {s3_key}")
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="File not found"
+                    status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
                 )
-            
+
             # Prepare parameters
             params = {
-                'Bucket': self.bucket_name,
-                'Key': s3_key,
+                "Bucket": self.bucket_name,
+                "Key": s3_key,
             }
-            
+
             # Add Content-Disposition if file_name is provided
             if file_name:
-                params['ResponseContentDisposition'] = f'attachment; filename="{file_name}"'
-            
+                params["ResponseContentDisposition"] = (
+                    f'attachment; filename="{file_name}"'
+                )
+
             # Generate URL
             s3_client = get_s3_client()
             url = s3_client.generate_presigned_url(
-                ClientMethod='get_object',
+                ClientMethod="get_object",
                 Params=params,
                 ExpiresIn=expiration,
-                HttpMethod='GET',
+                HttpMethod="GET",
             )
-            
+
             return url
-            
+
         except S3Error as e:
             logger.error(f"S3 error during URL generation: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to generate download URL: {str(e)}"
+                detail=f"Failed to generate download URL: {str(e)}",
             )
         except HTTPException:
             raise
@@ -333,9 +354,9 @@ class FileStorageService:
             logger.error(f"Unexpected error during URL generation: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected error occurred during URL generation"
+                detail="An unexpected error occurred during URL generation",
             )
-    
+
     def generate_upload_url(
         self,
         s3_key: str,
@@ -345,71 +366,75 @@ class FileStorageService:
     ) -> Dict[str, Any]:
         """
         Generate a secure pre-signed URL for direct file upload.
-        
+
         Args:
             s3_key: S3 object key
             content_type: Content type of the file
             expiration: URL expiration time in seconds
             max_size: Maximum allowed file size in bytes
-            
+
         Returns:
             Dict with upload URL and fields
-            
+
         Raises:
             S3Error: If URL generation fails
         """
         try:
             # Prepare conditions
             conditions = [
-                {'bucket': self.bucket_name},
-                {'key': s3_key},
-                ['content-length-range', 0, max_size or 10 * 1024 * 1024],  # Default 10MB max
-                {'Content-Type': content_type},
+                {"bucket": self.bucket_name},
+                {"key": s3_key},
+                [
+                    "content-length-range",
+                    0,
+                    max_size or 10 * 1024 * 1024,
+                ],  # Default 10MB max
+                {"Content-Type": content_type},
             ]
-            
+
             # Generate presigned POST
             s3_client = get_s3_client()
             presigned_post = s3_client.generate_presigned_post(
                 Bucket=self.bucket_name,
                 Key=s3_key,
                 Fields={
-                    'Content-Type': content_type,
+                    "Content-Type": content_type,
                 },
                 Conditions=conditions,
                 ExpiresIn=expiration,
             )
-            
+
             return presigned_post
-            
+
         except Exception as e:
             logger.error(f"Error generating upload URL: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to generate upload URL: {str(e)}"
+                detail=f"Failed to generate upload URL: {str(e)}",
             )
-    
+
     def check_file_exists(self, s3_key: str) -> bool:
         """
         Check if a file exists in S3.
-        
+
         Args:
             s3_key: S3 object key
-            
+
         Returns:
             bool: True if file exists, False otherwise
         """
         return check_file_exists(self.bucket_name, s3_key)
-    
+
     def get_file_metadata(self, s3_key: str) -> Dict[str, str]:
         """
         Get metadata for a file in S3.
-        
+
         Args:
             s3_key: S3 object key
-            
+
         Returns:
             Dict: File metadata
-            
+
         Raises:
             S3Error: If metadata retrieval fails
             HTTPException: If file doesn't exist
@@ -420,35 +445,31 @@ class FileStorageService:
             if not exists:
                 logger.warning(f"File not found: {s3_key}")
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="File not found"
+                    status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
                 )
-            
+
             # Get metadata
             s3_client = get_s3_client()
-            response = s3_client.head_object(
-                Bucket=self.bucket_name,
-                Key=s3_key
-            )
-            
+            response = s3_client.head_object(Bucket=self.bucket_name, Key=s3_key)
+
             # Extract metadata
-            metadata = response.get('Metadata', {})
-            content_type = response.get('ContentType')
-            content_length = response.get('ContentLength')
-            last_modified = response.get('LastModified')
-            
+            metadata = response.get("Metadata", {})
+            content_type = response.get("ContentType")
+            content_length = response.get("ContentLength")
+            last_modified = response.get("LastModified")
+
             return {
-                'metadata': metadata,
-                'content_type': content_type,
-                'content_length': content_length,
-                'last_modified': last_modified.isoformat() if last_modified else None,
+                "metadata": metadata,
+                "content_type": content_type,
+                "content_length": content_length,
+                "last_modified": last_modified.isoformat() if last_modified else None,
             }
-            
+
         except S3Error as e:
             logger.error(f"S3 error during metadata retrieval: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to retrieve file metadata: {str(e)}"
+                detail=f"Failed to retrieve file metadata: {str(e)}",
             )
         except HTTPException:
             raise
@@ -456,7 +477,7 @@ class FileStorageService:
             logger.error(f"Unexpected error during metadata retrieval: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected error occurred during metadata retrieval"
+                detail="An unexpected error occurred during metadata retrieval",
             )
 
 

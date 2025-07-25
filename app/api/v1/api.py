@@ -1,9 +1,19 @@
 """
 Main API router for v1 endpoints
 """
+
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, usage, locations, notes, photos, voice, query, media
+from app.api.v1.endpoints import (
+    auth,
+    locations,
+    media,
+    notes,
+    photos,
+    query,
+    usage,
+    voice,
+)
 
 api_router = APIRouter()
 
@@ -30,6 +40,7 @@ api_router.include_router(query.router, prefix="/query", tags=["query"])
 
 # Include media retrieval endpoints
 api_router.include_router(media.router, prefix="/media", tags=["media"])
+
 
 @api_router.get("/")
 async def api_info():

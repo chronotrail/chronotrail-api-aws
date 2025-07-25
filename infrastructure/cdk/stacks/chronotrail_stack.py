@@ -4,25 +4,25 @@ Main ChronoTrail infrastructure stack
 
 import aws_cdk as cdk
 from aws_cdk import (
-    Stack,
-    aws_ec2 as ec2,
-    aws_ecs as ecs,
-    aws_ecs_patterns as ecs_patterns,
-    aws_rds as rds,
-    aws_opensearchserverless as opensearch,
-    aws_s3 as s3,
-    aws_iam as iam,
-    aws_logs as logs,
-    aws_secretsmanager as secretsmanager,
-    aws_ssm as ssm,
-    aws_elasticloadbalancingv2 as elbv2,
-    aws_certificatemanager as acm,
-    aws_route53 as route53,
-    aws_route53_targets as targets,
-    aws_cognito as cognito,
     Duration,
     RemovalPolicy,
+    Stack,
 )
+from aws_cdk import aws_certificatemanager as acm
+from aws_cdk import aws_cognito as cognito
+from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_ecs_patterns as ecs_patterns
+from aws_cdk import aws_elasticloadbalancingv2 as elbv2
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_logs as logs
+from aws_cdk import aws_opensearchserverless as opensearch
+from aws_cdk import aws_rds as rds
+from aws_cdk import aws_route53 as route53
+from aws_cdk import aws_route53_targets as targets
+from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_secretsmanager as secretsmanager
+from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 
 
@@ -33,43 +33,43 @@ class ChronoTrailStack(Stack):
         construct_id: str,
         environment: str,
         config: dict,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        
+
         self.environment = environment
         self.config = config
-        
+
         # Create VPC
         self.vpc = self._create_vpc()
-        
+
         # Create security groups
         self.security_groups = self._create_security_groups()
-        
+
         # Create RDS database
         self.database = self._create_database()
-        
+
         # Create OpenSearch domain
         self.opensearch_domain = self._create_opensearch()
-        
+
         # Create S3 bucket for media files
         self.media_bucket = self._create_s3_bucket()
-        
+
         # Create Cognito User Pool
         self.user_pool = self._create_cognito()
-        
+
         # Create IAM roles
         self.task_role = self._create_task_role()
-        
+
         # Create ECS cluster and service
         self.ecs_service = self._create_ecs_service()
-        
+
         # Create Route53 records
         self._create_dns_records()
-        
+
         # Create SSM parameters for configuration
         self._create_ssm_parameters()
-        
+
         # Output important values
         self._create_outputs()
 
@@ -111,15 +111,9 @@ class ChronoTrailStack(Stack):
             description="Security group for Application Load Balancer",
             allow_all_outbound=True,
         )
+        alb_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443), "HTTPS traffic")
         alb_sg.add_ingress_rule(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(443),
-            "HTTPS traffic"
-        )
-        alb_sg.add_ingress_rule(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(80),
-            "HTTP traffic (redirect to HTTPS)"
+            ec2.Peer.any_ipv4(), ec2.Port.tcp(80), "HTTP traffic (redirect to HTTPS)"
         )
 
         # ECS Security Group
@@ -130,11 +124,7 @@ class ChronoTrailStack(Stack):
             description="Security group for ECS tasks",
             allow_all_outbound=True,
         )
-        ecs_sg.add_ingress_rule(
-            alb_sg,
-            ec2.Port.tcp(8000),
-            "Traffic from ALB"
-        )
+        ecs_sg.add_ingress_rule(alb_sg, ec2.Port.tcp(8000), "Traffic from ALB")
 
         # RDS Security Group
         rds_sg = ec2.SecurityGroup(
@@ -144,11 +134,7 @@ class ChronoTrailStack(Stack):
             description="Security group for RDS database",
             allow_all_outbound=False,
         )
-        rds_sg.add_ingress_rule(
-            ecs_sg,
-            ec2.Port.tcp(5432),
-            "PostgreSQL from ECS"
-        )
+        rds_sg.add_ingress_rule(ecs_sg, ec2.Port.tcp(5432), "PostgreSQL from ECS")
 
         # OpenSearch Security Group
         opensearch_sg = ec2.SecurityGroup(
@@ -158,11 +144,7 @@ class ChronoTrailStack(Stack):
             description="Security group for OpenSearch",
             allow_all_outbound=False,
         )
-        opensearch_sg.add_ingress_rule(
-            ecs_sg,
-            ec2.Port.tcp(443),
-            "HTTPS from ECS"
-        )
+        opensearch_sg.add_ingress_rule(ecs_sg, ec2.Port.tcp(443), "HTTPS from ECS")
 
         return {
             "alb": alb_sg,
@@ -200,8 +182,7 @@ class ChronoTrailStack(Stack):
                 version=rds.PostgresEngineVersion.VER_15_4
             ),
             instance_type=ec2.InstanceType.of(
-                ec2.InstanceClass.BURSTABLE3,
-                ec2.InstanceSize.MEDIUM
+                ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MEDIUM
             ),
             credentials=rds.Credentials.from_secret(db_credentials),
             database_name="chronotrail",
@@ -211,7 +192,11 @@ class ChronoTrailStack(Stack):
             backup_retention=Duration.days(7 if self.environment == "prod" else 1),
             deletion_protection=self.config["enable_deletion_protection"],
             delete_automated_backups=not self.config["enable_deletion_protection"],
-            removal_policy=RemovalPolicy.DESTROY if self.environment == "dev" else RemovalPolicy.SNAPSHOT,
+            removal_policy=(
+                RemovalPolicy.DESTROY
+                if self.environment == "dev"
+                else RemovalPolicy.SNAPSHOT
+            ),
             allocated_storage=20,
             max_allocated_storage=100,
             storage_encrypted=True,
@@ -286,7 +271,11 @@ class ChronoTrailStack(Stack):
             versioned=True,
             encryption=s3.BucketEncryption.S3_MANAGED,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
-            removal_policy=RemovalPolicy.DESTROY if self.environment == "dev" else RemovalPolicy.RETAIN,
+            removal_policy=(
+                RemovalPolicy.DESTROY
+                if self.environment == "dev"
+                else RemovalPolicy.RETAIN
+            ),
             lifecycle_rules=[
                 s3.LifecycleRule(
                     id="DeleteIncompleteMultipartUploads",
@@ -310,7 +299,11 @@ class ChronoTrailStack(Stack):
 
         # Add CORS configuration for web uploads
         bucket.add_cors_rule(
-            allowed_methods=[s3.HttpMethods.GET, s3.HttpMethods.POST, s3.HttpMethods.PUT],
+            allowed_methods=[
+                s3.HttpMethods.GET,
+                s3.HttpMethods.POST,
+                s3.HttpMethods.PUT,
+            ],
             allowed_origins=["*"],  # Configure this based on your frontend domains
             allowed_headers=["*"],
             max_age=3000,
@@ -339,7 +332,11 @@ class ChronoTrailStack(Stack):
                 require_symbols=True,
             ),
             account_recovery=cognito.AccountRecovery.EMAIL_ONLY,
-            removal_policy=RemovalPolicy.DESTROY if self.environment == "dev" else RemovalPolicy.RETAIN,
+            removal_policy=(
+                RemovalPolicy.DESTROY
+                if self.environment == "dev"
+                else RemovalPolicy.RETAIN
+            ),
         )
 
         # Create user pool client
@@ -483,16 +480,22 @@ class ChronoTrailStack(Stack):
             self,
             "ECSLogGroup",
             log_group_name=f"/ecs/chronotrail-{self.environment}",
-            retention=logs.RetentionDays.ONE_WEEK if self.environment == "dev" else logs.RetentionDays.ONE_MONTH,
+            retention=(
+                logs.RetentionDays.ONE_WEEK
+                if self.environment == "dev"
+                else logs.RetentionDays.ONE_MONTH
+            ),
             removal_policy=RemovalPolicy.DESTROY,
         )
 
         # Get certificate
-        certificate = acm.Certificate.from_certificate_arn(
-            self,
-            "Certificate",
-            self.config["certificate_arn"]
-        ) if self.config.get("certificate_arn") else None
+        certificate = (
+            acm.Certificate.from_certificate_arn(
+                self, "Certificate", self.config["certificate_arn"]
+            )
+            if self.config.get("certificate_arn")
+            else None
+        )
 
         # Create Fargate service
         service = ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -512,14 +515,13 @@ class ChronoTrailStack(Stack):
                 },
                 secrets={
                     "DATABASE_URL": ecs.Secret.from_secrets_manager(
-                        self.database.secret,
-                        "engine"
+                        self.database.secret, "engine"
                     ),
                     "OPENSEARCH_URL": ecs.Secret.from_ssm_parameter(
                         ssm.StringParameter.from_string_parameter_name(
                             self,
                             "OpenSearchURL",
-                            f"/chronotrail/{self.environment}/opensearch/url"
+                            f"/chronotrail/{self.environment}/opensearch/url",
                         )
                     ),
                 },
@@ -529,11 +531,13 @@ class ChronoTrailStack(Stack):
                 ),
             ),
             domain_name=self.config["domain_name"] if certificate else None,
-            domain_zone=route53.HostedZone.from_lookup(
-                self,
-                "HostedZone",
-                domain_name="chronotrail.com"
-            ) if certificate else None,
+            domain_zone=(
+                route53.HostedZone.from_lookup(
+                    self, "HostedZone", domain_name="chronotrail.com"
+                )
+                if certificate
+                else None
+            ),
             certificate=certificate,
             redirect_http=True if certificate else False,
             public_load_balancer=True,
@@ -577,9 +581,7 @@ class ChronoTrailStack(Stack):
             return
 
         hosted_zone = route53.HostedZone.from_lookup(
-            self,
-            "HostedZone",
-            domain_name="chronotrail.com"
+            self, "HostedZone", domain_name="chronotrail.com"
         )
 
         # A record for the API

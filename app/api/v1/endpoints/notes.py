@@ -1,26 +1,27 @@
 """
 Text notes endpoints for creating and managing text note submissions.
 """
+
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any, Dict
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_async_db
-from app.services.auth import get_current_active_user
-from app.services.usage import UsageService
-from app.repositories.text_notes import text_note_repository
 from app.aws.embedding import embedding_service
+from app.db.database import get_async_db
+from app.middleware.usage_validation import validate_content_usage
 from app.models.schemas import (
+    ContentType,
+    ErrorResponse,
     TextNote,
     TextNoteCreate,
     User,
-    ErrorResponse,
-    ContentType
 )
-from app.middleware.usage_validation import validate_content_usage
+from app.repositories.text_notes import text_note_repository
+from app.services.auth import get_current_active_user
+from app.services.usage import UsageService
 
 router = APIRouter()
 
@@ -37,40 +38,38 @@ router = APIRouter()
         401: {"description": "Authentication required", "model": ErrorResponse},
         403: {"description": "Usage limits exceeded", "model": ErrorResponse},
         422: {"description": "Validation error", "model": ErrorResponse},
-        500: {"description": "Internal server error", "model": ErrorResponse}
-    }
+        500: {"description": "Internal server error", "model": ErrorResponse},
+    },
 )
 async def create_text_note(
     note_data: TextNoteCreate,
     current_user: User = Depends(validate_content_usage),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_async_db),
 ) -> TextNote:
     """
     Create a new text note.
-    
+
     This endpoint accepts text content with optional location data, stores it in the
     relational database, generates vector embeddings, and stores them in the vector
     database for semantic search capabilities.
-    
+
     Args:
         note_data: Text note creation data including content, timestamp, and optional location
         current_user: Current authenticated user (validated for usage limits)
         db: Database session
-        
+
     Returns:
         TextNote: Created text note with all metadata
-        
+
     Raises:
         HTTPException: If validation fails, usage limits exceeded, or processing errors occur
     """
     try:
         # Create text note in relational database
         db_note = await text_note_repository.create(
-            db=db,
-            obj_in=note_data,
-            user_id=current_user.id
+            db=db, obj_in=note_data, user_id=current_user.id
         )
-        
+
         # Prepare location data for vector storage if provided
         location_data = None
         if note_data.longitude is not None and note_data.latitude is not None:
@@ -78,9 +77,9 @@ async def create_text_note(
                 "longitude": float(note_data.longitude),
                 "latitude": float(note_data.latitude),
                 "address": note_data.address,
-                "names": note_data.names or []
+                "names": note_data.names or [],
             }
-        
+
         # Store in vector database for semantic search
         try:
             await embedding_service.process_and_store_text(
@@ -89,22 +88,23 @@ async def create_text_note(
                 text=note_data.text_content,
                 source_id=db_note.id,
                 timestamp=note_data.timestamp,
-                location=location_data
+                location=location_data,
             )
         except Exception as embedding_error:
             # Log the error but don't fail the request - the note is still stored in relational DB
             # In a production system, you might want to queue this for retry
             import logging
+
             logger = logging.getLogger(__name__)
-            logger.error(f"Failed to store text note in vector database: {str(embedding_error)}")
-        
+            logger.error(
+                f"Failed to store text note in vector database: {str(embedding_error)}"
+            )
+
         # Increment usage counter
         await UsageService.increment_content_usage(
-            db=db,
-            user_id=current_user.id,
-            content_type="text_notes"
+            db=db, user_id=current_user.id, content_type="text_notes"
         )
-        
+
         # Convert to response model
         return TextNote(
             id=db_note.id,
@@ -116,9 +116,9 @@ async def create_text_note(
             address=db_note.address,
             names=db_note.names,
             created_at=db_note.created_at,
-            updated_at=db_note.created_at  # Use created_at since there's no updated_at field
+            updated_at=db_note.created_at,  # Use created_at since there's no updated_at field
         )
-        
+
     except HTTPException:
         # Re-raise HTTP exceptions (like usage limit errors)
         raise
@@ -126,5 +126,5 @@ async def create_text_note(
         # Handle unexpected errors
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create text note: {str(e)}"
+            detail=f"Failed to create text note: {str(e)}",
         )
