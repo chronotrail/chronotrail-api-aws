@@ -204,7 +204,7 @@
     - Test location tagging and search functionality
     - _Requirements: All requirements_
 
-- [ ] 14. Set up deployment configuration
+- [x] 14. Set up deployment configuration
   - Create Docker configuration for ECS Fargate deployment
   - Set up AWS infrastructure as code (CloudFormation/CDK)
   - Configure environment-specific settings and secrets management

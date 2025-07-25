@@ -1,0 +1,283 @@
+# CloudWatch Monitoring and Alerting Configuration
+# This file defines the monitoring setup for ChronoTrail API
+
+monitoring:
+  cloudwatch:
+    log_groups:
+      - name: "/ecs/chronotrail-{environment}"
+        retention_days: 30
+        metric_filters:
+          - name: "ErrorCount"
+            pattern: "[timestamp, request_id, level=ERROR, ...]"
+            metric_name: "ApplicationErrors"
+            metric_namespace: "ChronoTrail/{Environment}"
+            metric_value: "1"
+          
+          - name: "SlowRequests"
+            pattern: "[timestamp, request_id, level=INFO, message=\"Request completed\", duration > 5000, ...]"
+            metric_name: "SlowRequests"
+            metric_namespace: "ChronoTrail/{Environment}"
+            metric_value: "1"
+          
+          - name: "AuthFailures"
+            pattern: "[timestamp, request_id, level=WARNING, message=\"Authentication failed\", ...]"
+            metric_name: "AuthenticationFailures"
+            metric_namespace: "ChronoTrail/{Environment}"
+            metric_value: "1"
+
+    alarms:
+      # Application Alarms
+      - name: "ChronoTrail-{Environment}-HighErrorRate"
+        description: "High error rate detected"
+        metric_name: "ApplicationErrors"
+        namespace: "ChronoTrail/{Environment}"
+        statistic: "Sum"
+        period: 300
+        evaluation_periods: 2
+        threshold: 10
+        comparison_operator: "GreaterThanThreshold"
+        treat_missing_data: "notBreaching"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      - name: "ChronoTrail-{Environment}-HighResponseTime"
+        description: "High response time detected"
+        metric_name: "SlowRequests"
+        namespace: "ChronoTrail/{Environment}"
+        statistic: "Sum"
+        period: 300
+        evaluation_periods: 2
+        threshold: 5
+        comparison_operator: "GreaterThanThreshold"
+        treat_missing_data: "notBreaching"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      # ECS Alarms
+      - name: "ChronoTrail-{Environment}-ECS-HighCPU"
+        description: "ECS service high CPU utilization"
+        metric_name: "CPUUtilization"
+        namespace: "AWS/ECS"
+        dimensions:
+          ServiceName: "chronotrail-service"
+          ClusterName: "ChronoTrail-{Environment}"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 3
+        threshold: 80
+        comparison_operator: "GreaterThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      - name: "ChronoTrail-{Environment}-ECS-HighMemory"
+        description: "ECS service high memory utilization"
+        metric_name: "MemoryUtilization"
+        namespace: "AWS/ECS"
+        dimensions:
+          ServiceName: "chronotrail-service"
+          ClusterName: "ChronoTrail-{Environment}"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 3
+        threshold: 85
+        comparison_operator: "GreaterThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      # Load Balancer Alarms
+      - name: "ChronoTrail-{Environment}-ALB-HighLatency"
+        description: "Application Load Balancer high latency"
+        metric_name: "TargetResponseTime"
+        namespace: "AWS/ApplicationELB"
+        dimensions:
+          LoadBalancer: "app/ChronoTrail-{Environment}-ALB/xxxxx"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 2
+        threshold: 2.0
+        comparison_operator: "GreaterThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      - name: "ChronoTrail-{Environment}-ALB-UnhealthyTargets"
+        description: "Unhealthy targets detected"
+        metric_name: "UnHealthyHostCount"
+        namespace: "AWS/ApplicationELB"
+        dimensions:
+          TargetGroup: "targetgroup/ChronoTrail-{Environment}-TG/xxxxx"
+          LoadBalancer: "app/ChronoTrail-{Environment}-ALB/xxxxx"
+        statistic: "Average"
+        period: 60
+        evaluation_periods: 2
+        threshold: 0
+        comparison_operator: "GreaterThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      # Database Alarms
+      - name: "ChronoTrail-{Environment}-RDS-HighCPU"
+        description: "RDS high CPU utilization"
+        metric_name: "CPUUtilization"
+        namespace: "AWS/RDS"
+        dimensions:
+          DBInstanceIdentifier: "chronotrail-{environment}-db"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 2
+        threshold: 80
+        comparison_operator: "GreaterThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      - name: "ChronoTrail-{Environment}-RDS-HighConnections"
+        description: "RDS high connection count"
+        metric_name: "DatabaseConnections"
+        namespace: "AWS/RDS"
+        dimensions:
+          DBInstanceIdentifier: "chronotrail-{environment}-db"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 2
+        threshold: 80
+        comparison_operator: "GreaterThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      - name: "ChronoTrail-{Environment}-RDS-LowFreeSpace"
+        description: "RDS low free storage space"
+        metric_name: "FreeStorageSpace"
+        namespace: "AWS/RDS"
+        dimensions:
+          DBInstanceIdentifier: "chronotrail-{environment}-db"
+        statistic: "Average"
+        period: 300
+        evaluation_periods: 1
+        threshold: 2000000000  # 2GB in bytes
+        comparison_operator: "LessThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+      # OpenSearch Alarms
+      - name: "ChronoTrail-{Environment}-OpenSearch-ClusterRed"
+        description: "OpenSearch cluster status is red"
+        metric_name: "ClusterStatus.red"
+        namespace: "AWS/ES"
+        dimensions:
+          DomainName: "chronotrail-{environment}"
+          ClientId: "{account}"
+        statistic: "Maximum"
+        period: 60
+        evaluation_periods: 1
+        threshold: 0
+        comparison_operator: "GreaterThanThreshold"
+        alarm_actions:
+          - "arn:aws:sns:{region}:{account}:chronotrail-{environment}-alerts"
+
+  dashboards:
+    - name: "ChronoTrail-{Environment}-Overview"
+      widgets:
+        - type: "metric"
+          title: "API Request Rate"
+          metrics:
+            - namespace: "AWS/ApplicationELB"
+              metric_name: "RequestCount"
+              dimensions:
+                LoadBalancer: "app/ChronoTrail-{Environment}-ALB/xxxxx"
+              statistic: "Sum"
+          period: 300
+          
+        - type: "metric"
+          title: "API Response Time"
+          metrics:
+            - namespace: "AWS/ApplicationELB"
+              metric_name: "TargetResponseTime"
+              dimensions:
+                LoadBalancer: "app/ChronoTrail-{Environment}-ALB/xxxxx"
+              statistic: "Average"
+          period: 300
+          
+        - type: "metric"
+          title: "Error Rate"
+          metrics:
+            - namespace: "ChronoTrail/{Environment}"
+              metric_name: "ApplicationErrors"
+              statistic: "Sum"
+          period: 300
+          
+        - type: "metric"
+          title: "ECS CPU & Memory"
+          metrics:
+            - namespace: "AWS/ECS"
+              metric_name: "CPUUtilization"
+              dimensions:
+                ServiceName: "chronotrail-service"
+                ClusterName: "ChronoTrail-{Environment}"
+              statistic: "Average"
+            - namespace: "AWS/ECS"
+              metric_name: "MemoryUtilization"
+              dimensions:
+                ServiceName: "chronotrail-service"
+                ClusterName: "ChronoTrail-{Environment}"
+              statistic: "Average"
+          period: 300
+          
+        - type: "metric"
+          title: "Database Performance"
+          metrics:
+            - namespace: "AWS/RDS"
+              metric_name: "CPUUtilization"
+              dimensions:
+                DBInstanceIdentifier: "chronotrail-{environment}-db"
+              statistic: "Average"
+            - namespace: "AWS/RDS"
+              metric_name: "DatabaseConnections"
+              dimensions:
+                DBInstanceIdentifier: "chronotrail-{environment}-db"
+              statistic: "Average"
+          period: 300
+
+  notifications:
+    sns_topics:
+      - name: "chronotrail-{environment}-alerts"
+        display_name: "ChronoTrail {Environment} Alerts"
+        subscriptions:
+          - protocol: "email"
+            endpoint: "alerts@chronotrail.com"
+          - protocol: "sms"
+            endpoint: "+1234567890"  # Replace with actual phone number
+
+    notification_rules:
+      critical:
+        - "ChronoTrail-{Environment}-RDS-LowFreeSpace"
+        - "ChronoTrail-{Environment}-OpenSearch-ClusterRed"
+        - "ChronoTrail-{Environment}-ALB-UnhealthyTargets"
+      
+      warning:
+        - "ChronoTrail-{Environment}-HighErrorRate"
+        - "ChronoTrail-{Environment}-HighResponseTime"
+        - "ChronoTrail-{Environment}-ECS-HighCPU"
+        - "ChronoTrail-{Environment}-ECS-HighMemory"
+        - "ChronoTrail-{Environment}-ALB-HighLatency"
+        - "ChronoTrail-{Environment}-RDS-HighCPU"
+        - "ChronoTrail-{Environment}-RDS-HighConnections"
+
+# Environment-specific overrides
+environments:
+  dev:
+    alarm_thresholds:
+      error_rate: 20  # Higher threshold for dev
+      response_time: 10  # More lenient for dev
+    notification_frequency: "daily"
+    
+  staging:
+    alarm_thresholds:
+      error_rate: 15
+      response_time: 5
+    notification_frequency: "immediate"
+    
+  prod:
+    alarm_thresholds:
+      error_rate: 5   # Strict threshold for prod
+      response_time: 2
+    notification_frequency: "immediate"
+    escalation_enabled: true

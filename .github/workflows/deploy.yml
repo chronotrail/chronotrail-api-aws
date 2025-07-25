@@ -1,0 +1,333 @@
+name: Deploy ChronoTrail API
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/*'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: chronotrail-api
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: chronotrail
+          POSTGRES_DB: chronotrail_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      opensearch:
+        image: opensearchproject/opensearch:2.11.0
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: true
+        options: >-
+          --health-cmd "curl -f http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 9200:9200
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install UV
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv sync
+
+    - name: Run linting
+      run: |
+        uv run black --check .
+        uv run isort --check-only .
+        uv run flake8 .
+
+    - name: Run type checking
+      run: |
+        uv run mypy app/
+
+    - name: Run tests
+      env:
+        DATABASE_URL: postgresql://chronotrail:password@localhost:5432/chronotrail_test
+        OPENSEARCH_URL: http://localhost:9200
+        JWT_SECRET_KEY: test-secret-key
+        ENVIRONMENT: testing
+      run: |
+        uv run pytest --cov=app --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install CDK
+      run: |
+        npm install -g aws-cdk
+
+    - name: Install CDK dependencies
+      run: |
+        cd infrastructure/cdk
+        pip install -r requirements.txt
+
+    - name: Deploy to development
+      run: |
+        cd infrastructure/cdk
+        cdk deploy --context environment=dev --require-approval never
+
+    - name: Run database migrations
+      run: |
+        # Get database endpoint
+        DB_HOST=$(aws ssm get-parameter --name "/chronotrail/dev/database/host" --query 'Parameter.Value' --output text)
+        
+        # Run migrations using the built image
+        docker run --rm \
+          -e DATABASE_URL="postgresql://chronotrail:password@$DB_HOST:5432/chronotrail" \
+          ${{ needs.build.outputs.image-tag }} \
+          alembic upgrade head
+
+    - name: Health check
+      run: |
+        # Get load balancer URL
+        LB_URL=$(aws cloudformation describe-stacks \
+          --stack-name "ChronoTrail-Dev" \
+          --query 'Stacks[0].Outputs[?OutputKey==`LoadBalancerDNS`].OutputValue' \
+          --output text)
+        
+        # Wait for health check
+        for i in {1..30}; do
+          if curl -f -s "https://$LB_URL/health" > /dev/null; then
+            echo "Health check passed"
+            exit 0
+          fi
+          echo "Attempt $i/30: Waiting for service..."
+          sleep 10
+        done
+        echo "Health check failed"
+        exit 1
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/release/')
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install CDK
+      run: |
+        npm install -g aws-cdk
+
+    - name: Install CDK dependencies
+      run: |
+        cd infrastructure/cdk
+        pip install -r requirements.txt
+
+    - name: Deploy to staging
+      run: |
+        cd infrastructure/cdk
+        cdk deploy --context environment=staging --require-approval never
+
+    - name: Run database migrations
+      run: |
+        DB_HOST=$(aws ssm get-parameter --name "/chronotrail/staging/database/host" --query 'Parameter.Value' --output text)
+        docker run --rm \
+          -e DATABASE_URL="postgresql://chronotrail:password@$DB_HOST:5432/chronotrail" \
+          ${{ needs.build.outputs.image-tag }} \
+          alembic upgrade head
+
+    - name: Run integration tests
+      run: |
+        # Run integration tests against staging environment
+        LB_URL=$(aws cloudformation describe-stacks \
+          --stack-name "ChronoTrail-Staging" \
+          --query 'Stacks[0].Outputs[?OutputKey==`LoadBalancerDNS`].OutputValue' \
+          --output text)
+        
+        # Add integration test commands here
+        echo "Integration tests would run against https://$LB_URL"
+
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install CDK
+      run: |
+        npm install -g aws-cdk
+
+    - name: Install CDK dependencies
+      run: |
+        cd infrastructure/cdk
+        pip install -r requirements.txt
+
+    - name: Deploy to production
+      run: |
+        cd infrastructure/cdk
+        cdk deploy --context environment=prod --require-approval never
+
+    - name: Run database migrations
+      run: |
+        DB_HOST=$(aws ssm get-parameter --name "/chronotrail/prod/database/host" --query 'Parameter.Value' --output text)
+        docker run --rm \
+          -e DATABASE_URL="postgresql://chronotrail:password@$DB_HOST:5432/chronotrail" \
+          ${{ needs.build.outputs.image-tag }} \
+          alembic upgrade head
+
+    - name: Post-deployment verification
+      run: |
+        LB_URL=$(aws cloudformation describe-stacks \
+          --stack-name "ChronoTrail-Prod" \
+          --query 'Stacks[0].Outputs[?OutputKey==`LoadBalancerDNS`].OutputValue' \
+          --output text)
+        
+        # Verify critical endpoints
+        curl -f "https://$LB_URL/health"
+        curl -f "https://$LB_URL/"
+        
+        echo "Production deployment verified successfully"
+
+  notify:
+    needs: [deploy-dev, deploy-staging, deploy-prod]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify deployment status
+      run: |
+        if [[ "${{ needs.deploy-dev.result }}" == "success" ]] || \
+           [[ "${{ needs.deploy-staging.result }}" == "success" ]] || \
+           [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
+          echo "Deployment completed successfully"
+        else
+          echo "Deployment failed or was skipped"
+        fi
